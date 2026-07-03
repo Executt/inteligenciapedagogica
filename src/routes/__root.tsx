@@ -77,14 +77,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Edu-Gov · Inteligência Pedagógica" },
+      { name: "description", content: "Plataforma governamental de análise multidimensional de dados escolares com IA aplicada a intervenções pedagógicas." },
+      { name: "author", content: "Edu-Gov" },
+      { property: "og:title", content: "Edu-Gov · Inteligência Pedagógica" },
+      { property: "og:description", content: "Transforme dados de escolas, turmas e alunos em relatórios estratégicos e planos de ação." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
