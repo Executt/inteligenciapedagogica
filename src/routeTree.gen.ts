@@ -9,13 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TurmasRouteImport } from './routes/turmas'
+import { Route as IntervencaoRouteImport } from './routes/intervencao'
 import { Route as IntegracaoRouteImport } from './routes/integracao'
+import { Route as EscolaRouteImport } from './routes/escola'
 import { Route as EntidadesRouteImport } from './routes/entidades'
+import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TurmaIdRouteImport } from './routes/turma.$id'
+import { Route as AlunoIdRouteImport } from './routes/aluno.$id'
 
+const TurmasRoute = TurmasRouteImport.update({
+  id: '/turmas',
+  path: '/turmas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntervencaoRoute = IntervencaoRouteImport.update({
+  id: '/intervencao',
+  path: '/intervencao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IntegracaoRoute = IntegracaoRouteImport.update({
   id: '/integracao',
   path: '/integracao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EscolaRoute = EscolaRouteImport.update({
+  id: '/escola',
+  path: '/escola',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntidadesRoute = EntidadesRouteImport.update({
@@ -23,49 +44,137 @@ const EntidadesRoute = EntidadesRouteImport.update({
   path: '/entidades',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlunosRoute = AlunosRouteImport.update({
+  id: '/alunos',
+  path: '/alunos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TurmaIdRoute = TurmaIdRouteImport.update({
+  id: '/turma/$id',
+  path: '/turma/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlunoIdRoute = AlunoIdRouteImport.update({
+  id: '/aluno/$id',
+  path: '/aluno/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alunos': typeof AlunosRoute
   '/entidades': typeof EntidadesRoute
+  '/escola': typeof EscolaRoute
   '/integracao': typeof IntegracaoRoute
+  '/intervencao': typeof IntervencaoRoute
+  '/turmas': typeof TurmasRoute
+  '/aluno/$id': typeof AlunoIdRoute
+  '/turma/$id': typeof TurmaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alunos': typeof AlunosRoute
   '/entidades': typeof EntidadesRoute
+  '/escola': typeof EscolaRoute
   '/integracao': typeof IntegracaoRoute
+  '/intervencao': typeof IntervencaoRoute
+  '/turmas': typeof TurmasRoute
+  '/aluno/$id': typeof AlunoIdRoute
+  '/turma/$id': typeof TurmaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alunos': typeof AlunosRoute
   '/entidades': typeof EntidadesRoute
+  '/escola': typeof EscolaRoute
   '/integracao': typeof IntegracaoRoute
+  '/intervencao': typeof IntervencaoRoute
+  '/turmas': typeof TurmasRoute
+  '/aluno/$id': typeof AlunoIdRoute
+  '/turma/$id': typeof TurmaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/entidades' | '/integracao'
+  fullPaths:
+    | '/'
+    | '/alunos'
+    | '/entidades'
+    | '/escola'
+    | '/integracao'
+    | '/intervencao'
+    | '/turmas'
+    | '/aluno/$id'
+    | '/turma/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/entidades' | '/integracao'
-  id: '__root__' | '/' | '/entidades' | '/integracao'
+  to:
+    | '/'
+    | '/alunos'
+    | '/entidades'
+    | '/escola'
+    | '/integracao'
+    | '/intervencao'
+    | '/turmas'
+    | '/aluno/$id'
+    | '/turma/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/alunos'
+    | '/entidades'
+    | '/escola'
+    | '/integracao'
+    | '/intervencao'
+    | '/turmas'
+    | '/aluno/$id'
+    | '/turma/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlunosRoute: typeof AlunosRoute
   EntidadesRoute: typeof EntidadesRoute
+  EscolaRoute: typeof EscolaRoute
   IntegracaoRoute: typeof IntegracaoRoute
+  IntervencaoRoute: typeof IntervencaoRoute
+  TurmasRoute: typeof TurmasRoute
+  AlunoIdRoute: typeof AlunoIdRoute
+  TurmaIdRoute: typeof TurmaIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/turmas': {
+      id: '/turmas'
+      path: '/turmas'
+      fullPath: '/turmas'
+      preLoaderRoute: typeof TurmasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intervencao': {
+      id: '/intervencao'
+      path: '/intervencao'
+      fullPath: '/intervencao'
+      preLoaderRoute: typeof IntervencaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/integracao': {
       id: '/integracao'
       path: '/integracao'
       fullPath: '/integracao'
       preLoaderRoute: typeof IntegracaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/escola': {
+      id: '/escola'
+      path: '/escola'
+      fullPath: '/escola'
+      preLoaderRoute: typeof EscolaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entidades': {
@@ -75,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntidadesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alunos': {
+      id: '/alunos'
+      path: '/alunos'
+      fullPath: '/alunos'
+      preLoaderRoute: typeof AlunosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,13 +198,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/turma/$id': {
+      id: '/turma/$id'
+      path: '/turma/$id'
+      fullPath: '/turma/$id'
+      preLoaderRoute: typeof TurmaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aluno/$id': {
+      id: '/aluno/$id'
+      path: '/aluno/$id'
+      fullPath: '/aluno/$id'
+      preLoaderRoute: typeof AlunoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlunosRoute: AlunosRoute,
   EntidadesRoute: EntidadesRoute,
+  EscolaRoute: EscolaRoute,
   IntegracaoRoute: IntegracaoRoute,
+  IntervencaoRoute: IntervencaoRoute,
+  TurmasRoute: TurmasRoute,
+  AlunoIdRoute: AlunoIdRoute,
+  TurmaIdRoute: TurmaIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

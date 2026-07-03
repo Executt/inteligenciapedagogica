@@ -130,11 +130,11 @@ export function getEvolucaoMensal() {
   }));
 }
 
-export function getHeatmapTurma(turmaId: string) {
+export function getHeatmapTurma(turmaId: string): Array<Record<string, string | number>> {
   const alunosTurma = alunos.filter((a) => a.turmaId === turmaId);
   const rand = seeded(turmaId.charCodeAt(1) * 31);
   return alunosTurma.map((a) => ({
-    aluno: a.nome.split(" ")[0] + " " + a.nome.split(" ")[1]?.[0] + ".",
+    aluno: a.nome.split(" ")[0] + " " + (a.nome.split(" ")[1]?.[0] ?? "") + ".",
     id: a.id,
     ...Object.fromEntries(disciplinas.map((d) => [d, Number((a.mediaGeral + (rand() - 0.5) * 3).toFixed(1))])),
   }));
