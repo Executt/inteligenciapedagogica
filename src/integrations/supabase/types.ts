@@ -14,16 +14,206 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cortex_analises: {
+        Row: {
+          aluno_id: string
+          criado_em: string
+          criado_por: string
+          eixo_cognitivo: Json
+          eixo_educacional: Json
+          eixo_socioemocional: Json
+          fontes: Json
+          id: string
+          modelo_usado: string | null
+          plano_acao: Json
+          publico_alvo: string
+          rota_roteador: string | null
+        }
+        Insert: {
+          aluno_id: string
+          criado_em?: string
+          criado_por: string
+          eixo_cognitivo?: Json
+          eixo_educacional?: Json
+          eixo_socioemocional?: Json
+          fontes?: Json
+          id?: string
+          modelo_usado?: string | null
+          plano_acao?: Json
+          publico_alvo: string
+          rota_roteador?: string | null
+        }
+        Update: {
+          aluno_id?: string
+          criado_em?: string
+          criado_por?: string
+          eixo_cognitivo?: Json
+          eixo_educacional?: Json
+          eixo_socioemocional?: Json
+          fontes?: Json
+          id?: string
+          modelo_usado?: string | null
+          plano_acao?: Json
+          publico_alvo?: string
+          rota_roteador?: string | null
+        }
+        Relationships: []
+      }
+      documento_chunks: {
+        Row: {
+          aluno_id: string
+          criado_em: string
+          criado_por: string
+          documento_id: string
+          embedding: string | null
+          id: string
+          metadados: Json | null
+          ordem: number
+          texto: string
+        }
+        Insert: {
+          aluno_id: string
+          criado_em?: string
+          criado_por: string
+          documento_id: string
+          embedding?: string | null
+          id?: string
+          metadados?: Json | null
+          ordem: number
+          texto: string
+        }
+        Update: {
+          aluno_id?: string
+          criado_em?: string
+          criado_por?: string
+          documento_id?: string
+          embedding?: string | null
+          id?: string
+          metadados?: Json | null
+          ordem?: number
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_chunks_documento_id_fkey"
+            columns: ["documento_id"]
+            isOneToOne: false
+            referencedRelation: "documentos_aluno"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documentos_aluno: {
+        Row: {
+          aluno_id: string
+          competencias: Json | null
+          criado_em: string
+          criado_por: string
+          erro: string | null
+          id: string
+          mime: string | null
+          modelo_usado: string | null
+          nome: string
+          resumo: string | null
+          rota_roteador: string | null
+          sensivel: boolean
+          status_ingestao: string
+          storage_path: string | null
+          tamanho: number | null
+          tipo: string
+          tom_emocional: string | null
+        }
+        Insert: {
+          aluno_id: string
+          competencias?: Json | null
+          criado_em?: string
+          criado_por: string
+          erro?: string | null
+          id?: string
+          mime?: string | null
+          modelo_usado?: string | null
+          nome: string
+          resumo?: string | null
+          rota_roteador?: string | null
+          sensivel?: boolean
+          status_ingestao?: string
+          storage_path?: string | null
+          tamanho?: number | null
+          tipo: string
+          tom_emocional?: string | null
+        }
+        Update: {
+          aluno_id?: string
+          competencias?: Json | null
+          criado_em?: string
+          criado_por?: string
+          erro?: string | null
+          id?: string
+          mime?: string | null
+          modelo_usado?: string | null
+          nome?: string
+          resumo?: string | null
+          rota_roteador?: string | null
+          sensivel?: boolean
+          status_ingestao?: string
+          storage_path?: string | null
+          tamanho?: number | null
+          tipo?: string
+          tom_emocional?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      match_documento_chunks: {
+        Args: {
+          p_aluno_id: string
+          p_criado_por?: string
+          p_match_count?: number
+          p_query_embedding: string
+        }
+        Returns: {
+          documento_id: string
+          id: string
+          metadados: Json
+          similarity: number
+          texto: string
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "direcao" | "coordenacao" | "professor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +340,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["direcao", "coordenacao", "professor"],
+    },
   },
 } as const
