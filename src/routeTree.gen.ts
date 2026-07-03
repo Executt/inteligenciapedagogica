@@ -14,6 +14,7 @@ import { Route as IntervencaoRouteImport } from './routes/intervencao'
 import { Route as IntegracaoRouteImport } from './routes/integracao'
 import { Route as EscolaRouteImport } from './routes/escola'
 import { Route as EntidadesRouteImport } from './routes/entidades'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TurmaIdRouteImport } from './routes/turma.$id'
@@ -44,6 +45,11 @@ const EntidadesRoute = EntidadesRouteImport.update({
   path: '/entidades',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlunosRoute = AlunosRouteImport.update({
   id: '/alunos',
   path: '/alunos',
@@ -68,6 +74,7 @@ const AlunoIdRoute = AlunoIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
+  '/auth': typeof AuthRoute
   '/entidades': typeof EntidadesRoute
   '/escola': typeof EscolaRoute
   '/integracao': typeof IntegracaoRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
+  '/auth': typeof AuthRoute
   '/entidades': typeof EntidadesRoute
   '/escola': typeof EscolaRoute
   '/integracao': typeof IntegracaoRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
+  '/auth': typeof AuthRoute
   '/entidades': typeof EntidadesRoute
   '/escola': typeof EscolaRoute
   '/integracao': typeof IntegracaoRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/alunos'
+    | '/auth'
     | '/entidades'
     | '/escola'
     | '/integracao'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/alunos'
+    | '/auth'
     | '/entidades'
     | '/escola'
     | '/integracao'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/alunos'
+    | '/auth'
     | '/entidades'
     | '/escola'
     | '/integracao'
@@ -138,6 +150,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlunosRoute: typeof AlunosRoute
+  AuthRoute: typeof AuthRoute
   EntidadesRoute: typeof EntidadesRoute
   EscolaRoute: typeof EscolaRoute
   IntegracaoRoute: typeof IntegracaoRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntidadesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alunos': {
       id: '/alunos'
       path: '/alunos'
@@ -218,6 +238,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlunosRoute: AlunosRoute,
+  AuthRoute: AuthRoute,
   EntidadesRoute: EntidadesRoute,
   EscolaRoute: EscolaRoute,
   IntegracaoRoute: IntegracaoRoute,
