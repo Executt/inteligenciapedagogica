@@ -30,7 +30,14 @@ function AlunoView() {
         <PageHeader
           title={`Dossiê · ${a.nome}`}
           subtitle={`Matrícula ${a.matricula} · ${a.idade} anos · Responsável: ${a.responsavel}`}
-          actions={<Button asChild variant="outline" size="sm"><Link to="/alunos">← Todos os alunos</Link></Button>}
+          actions={
+            <div className="flex items-center gap-2">
+              <Button asChild size="sm">
+                <Link to="/cortex" search={{ aluno: a.id }}>Abrir no Edu-Córtex →</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm"><Link to="/alunos">← Todos</Link></Button>
+            </div>
+          }
         />
 
         <div className="grid grid-cols-4 gap-4 mb-6">

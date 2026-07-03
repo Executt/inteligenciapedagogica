@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import {
-  LayoutDashboard, Building2, Upload, School, Users, User2, Sparkles, GraduationCap, Bell, Search,
+  LayoutDashboard, Building2, Upload, School, Users, User2, Sparkles, GraduationCap, Bell, Search, Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ const nav = [
   { to: "/turmas", label: "Visão da Turma", icon: Users },
   { to: "/alunos", label: "Dossiê do Aluno", icon: User2 },
   { to: "/intervencao", label: "Intervenção Pedagógica", icon: Sparkles },
+  { to: "/cortex", label: "Edu-Córtex · IA", icon: Brain },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

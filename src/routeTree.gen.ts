@@ -16,9 +16,11 @@ import { Route as EscolaRouteImport } from './routes/escola'
 import { Route as EntidadesRouteImport } from './routes/entidades'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AlunosRouteImport } from './routes/alunos'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TurmaIdRouteImport } from './routes/turma.$id'
 import { Route as AlunoIdRouteImport } from './routes/aluno.$id'
+import { Route as AuthenticatedCortexRouteImport } from './routes/_authenticated/cortex'
 
 const TurmasRoute = TurmasRouteImport.update({
   id: '/turmas',
@@ -55,6 +57,10 @@ const AlunosRoute = AlunosRouteImport.update({
   path: '/alunos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -70,6 +76,11 @@ const AlunoIdRoute = AlunoIdRouteImport.update({
   path: '/aluno/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCortexRoute = AuthenticatedCortexRouteImport.update({
+  id: '/cortex',
+  path: '/cortex',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/integracao': typeof IntegracaoRoute
   '/intervencao': typeof IntervencaoRoute
   '/turmas': typeof TurmasRoute
+  '/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
   '/turma/$id': typeof TurmaIdRoute
 }
@@ -92,12 +104,14 @@ export interface FileRoutesByTo {
   '/integracao': typeof IntegracaoRoute
   '/intervencao': typeof IntervencaoRoute
   '/turmas': typeof TurmasRoute
+  '/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
   '/turma/$id': typeof TurmaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/alunos': typeof AlunosRoute
   '/auth': typeof AuthRoute
   '/entidades': typeof EntidadesRoute
@@ -105,6 +119,7 @@ export interface FileRoutesById {
   '/integracao': typeof IntegracaoRoute
   '/intervencao': typeof IntervencaoRoute
   '/turmas': typeof TurmasRoute
+  '/_authenticated/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
   '/turma/$id': typeof TurmaIdRoute
 }
@@ -119,6 +134,7 @@ export interface FileRouteTypes {
     | '/integracao'
     | '/intervencao'
     | '/turmas'
+    | '/cortex'
     | '/aluno/$id'
     | '/turma/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -131,11 +147,13 @@ export interface FileRouteTypes {
     | '/integracao'
     | '/intervencao'
     | '/turmas'
+    | '/cortex'
     | '/aluno/$id'
     | '/turma/$id'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/alunos'
     | '/auth'
     | '/entidades'
@@ -143,12 +161,14 @@ export interface FileRouteTypes {
     | '/integracao'
     | '/intervencao'
     | '/turmas'
+    | '/_authenticated/cortex'
     | '/aluno/$id'
     | '/turma/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AlunosRoute: typeof AlunosRoute
   AuthRoute: typeof AuthRoute
   EntidadesRoute: typeof EntidadesRoute
@@ -211,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlunosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -232,11 +259,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlunoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/cortex': {
+      id: '/_authenticated/cortex'
+      path: '/cortex'
+      fullPath: '/cortex'
+      preLoaderRoute: typeof AuthenticatedCortexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCortexRoute: typeof AuthenticatedCortexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCortexRoute: AuthenticatedCortexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AlunosRoute: AlunosRoute,
   AuthRoute: AuthRoute,
   EntidadesRoute: EntidadesRoute,
@@ -250,3 +296,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
