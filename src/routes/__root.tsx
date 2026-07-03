@@ -82,9 +82,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Plataforma governamental de análise multidimensional de dados escolares com IA aplicada a intervenções pedagógicas." },
       { name: "author", content: "Edu-Gov" },
       { property: "og:title", content: "Edu-Gov · Inteligência Pedagógica" },
-      { property: "og:description", content: "Transforme dados de escolas, turmas e alunos em relatórios estratégicos e planos de ação." },
+      { property: "og:description", content: "Plataforma governamental de análise multidimensional de dados escolares com IA aplicada a intervenções pedagógicas." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Edu-Gov · Inteligência Pedagógica" },
+      { name: "twitter:description", content: "Plataforma governamental de análise multidimensional de dados escolares com IA aplicada a intervenções pedagógicas." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/iWu1j5UOnqNJO9qNilMf515TC2r2/social-images/social-1783119301118-Gemini_Generated_Image_9w6uv89w6uv89w6u.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/iWu1j5UOnqNJO9qNilMf515TC2r2/social-images/social-1783119301118-Gemini_Generated_Image_9w6uv89w6uv89w6u.webp" },
     ],
     links: [
       {
