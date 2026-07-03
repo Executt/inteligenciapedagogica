@@ -9,8 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IntegracaoRouteImport } from './routes/integracao'
+import { Route as EntidadesRouteImport } from './routes/entidades'
 import { Route as IndexRouteImport } from './routes/index'
 
+const IntegracaoRoute = IntegracaoRouteImport.update({
+  id: '/integracao',
+  path: '/integracao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntidadesRoute = EntidadesRouteImport.update({
+  id: '/entidades',
+  path: '/entidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +31,50 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/entidades': typeof EntidadesRoute
+  '/integracao': typeof IntegracaoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/entidades': typeof EntidadesRoute
+  '/integracao': typeof IntegracaoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/entidades': typeof EntidadesRoute
+  '/integracao': typeof IntegracaoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/entidades' | '/integracao'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/entidades' | '/integracao'
+  id: '__root__' | '/' | '/entidades' | '/integracao'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EntidadesRoute: typeof EntidadesRoute
+  IntegracaoRoute: typeof IntegracaoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/integracao': {
+      id: '/integracao'
+      path: '/integracao'
+      fullPath: '/integracao'
+      preLoaderRoute: typeof IntegracaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entidades': {
+      id: '/entidades'
+      path: '/entidades'
+      fullPath: '/entidades'
+      preLoaderRoute: typeof EntidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +87,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EntidadesRoute: EntidadesRoute,
+  IntegracaoRoute: IntegracaoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
