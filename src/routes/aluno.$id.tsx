@@ -45,7 +45,7 @@ function AlunoView() {
           }
         />
 
-        <Tabs defaultValue="visao" className="space-y-4">
+
           <TabsList>
             <TabsTrigger value="visao"><BarChart3 className="h-3.5 w-3.5 mr-1.5" /> Visão geral</TabsTrigger>
             <TabsTrigger value="dossie"><Brain className="h-3.5 w-3.5 mr-1.5" /> Dossiê IA · RAG</TabsTrigger>
