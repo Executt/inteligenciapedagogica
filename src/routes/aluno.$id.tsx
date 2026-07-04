@@ -5,12 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchAlunoMetrics } from "@/lib/api";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
 } from "recharts";
-import { CalendarClock, GraduationCap, Users } from "lucide-react";
+import { CalendarClock, GraduationCap, Users, BarChart3, Brain } from "lucide-react";
+import {
+  UploadZone, DocumentosList, GerarAnalise, AnalisesHistorico, RequireAuth,
+} from "@/components/cortex/DossieAluno";
+
 
 export const Route = createFileRoute("/aluno/$id")({ component: AlunoView });
 
