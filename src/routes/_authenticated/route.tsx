@@ -3,9 +3,21 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
+
+    // Redireciona para troca de senha se marcado no perfil.
+    if (!location.pathname.startsWith("/reset-password")) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("must_change_password")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (profile?.must_change_password) {
+        throw redirect({ to: "/reset-password", search: { forced: "1" } });
+      }
+    }
     return { user: data.user };
   },
   component: () => <Outlet />,

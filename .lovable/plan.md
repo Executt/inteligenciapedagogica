@@ -1,78 +1,94 @@
-# Plano: Edu-Córtex (Stack completa — Cloud + RAG)
 
-Construir o orquestrador cognitivo do Edu-Gov com ingestão multimodal, RAG pgvector, roteamento de modelos e relatórios nos 3 eixos (Educacional / Cognitivo / Socioemocional) + plano de ação.
+## O que vou entregar
 
-## Etapa 1 — Infra (Lovable Cloud)
+Quatro blocos, todos funcionais e integrados ao Lovable Cloud (backend), com RLS por papel.
 
-Ativar Lovable Cloud e provisionar:
+### 1. Autenticação completa
+- **`/auth`**: validação com zod, mensagens de erro amigáveis em PT-BR mapeadas do Supabase (credenciais inválidas, e-mail não confirmado, rate limit, etc.), estado de loading, exibição de erro inline.
+- **Força de senha**: mínimo 10 caracteres, 1 maiúscula, 1 minúscula, 1 número, 1 símbolo — indicador visual (fraca/média/forte) no signup e no reset.
+- **Troca no 1º acesso (política geral)**: coluna `must_change_password` na tabela `profiles`. Trigger cria `profiles` automaticamente em `auth.users` com `must_change_password=true`. Superadmin existente recebe `true` via backfill.
+- **`/reset-password`** (rota pública): usada tanto pelo fluxo "esqueci minha senha" (`resetPasswordForEmail`) quanto pelo fluxo forçado. Após `updateUser({ password })`, marca `must_change_password=false`.
+- **Guarda de troca forçada**: no `_authenticated/route.tsx`, após confirmar sessão, consulta `profiles.must_change_password` e redireciona para `/reset-password?forced=1` até ser trocada.
 
-- **Storage bucket** `dossies` (privado), com RLS por `auth.uid()` no path `userId/alunoId/...`.
-- **Auth**: e-mail/senha + Google (para direção/coordenação/professores).
-- **Tabela `user_roles`** (`app_role` enum: `direcao`, `coordenacao`, `professor`) + função `has_role` (padrão obrigatório).
-- **pgvector** extensão + tabelas:
-  - `documentos_aluno` (id, aluno_id, tipo `imagem|pdf|texto|planilha`, nome, storage_path, mime, tamanho, status_ingestao, tom_emocional, competencias jsonb, criado_em, criado_por).
-  - `documento_chunks` (id, documento_id, aluno_id, ordem, texto, embedding `vector(3072)`, metadados jsonb) com índice HNSW cosine.
-  - `cortex_analises` (id, aluno_id, eixo_educacional jsonb, eixo_cognitivo jsonb, eixo_socioemocional jsonb, plano_acao jsonb, publico_alvo, fontes jsonb, modelo_usado, custo_estimado, criado_em, criado_por).
-- **GRANTs** obrigatórios (`authenticated`, `service_role`) + RLS scoped em `auth.uid()` cruzando com `user_roles`.
+### 2. Gestão de Usuários (`/configuracoes/usuarios`)
+- Acesso restrito a `admin` (superadmin). Tela lista todos os usuários (nome, e-mail, role, ativo, último login).
+- Ações: **criar** (e-mail + senha temporária + role, força troca no 1º acesso), **desativar/reativar** (banir via Auth Admin API), **alterar role** (grava em `user_roles`).
+- ServerFn com `requireSupabaseAuth` + `has_role(uid,'admin')` + `supabaseAdmin` (carregado dentro do handler) para Auth Admin API.
 
-## Etapa 2 — Roteador de modelos (Lovable AI Gateway)
+### 3. Logs de Auditoria (`/configuracoes/auditoria`)
+- Tabela `audit_logs` (actor_id, target_user_id, action, entity, metadata jsonb, ip, user_agent, created_at).
+- **Ações capturadas**: login sucesso, login falha, logout, criação de usuário, desativação, mudança de role, troca de senha, alteração de configurações.
+- Trigger em `user_roles` (INSERT/DELETE) grava automaticamente.
+- ServerFn `logAuditEvent` para eventos que vêm do cliente (login/logout/falha).
+- Tela com filtros por usuário (busca) e faixa de data. Só admin lê.
 
-Server functions (`createServerFn`) usando `@ai-sdk/openai-compatible` + Lovable AI Gateway:
+### 4. Módulo Configurações (`/configuracoes`)
+Shell com sidebar de abas, cada aba é uma sub-rota. Todas persistem em `app_settings` (chave/valor jsonb) — sem envio real de e-mail/SMS agora, conforme sua escolha.
 
-- **Rota "local-like" (econômica)** → `google/gemini-3.1-flash-lite` para: extração de entidades em relatos, sumarização, tom emocional, embeddings query, classificação simples.
-- **Rota "premium multimodal"** → `google/gemini-3-pro-image` p/ OCR de provas manuscritas / laudos escaneados, e `google/gemini-2.5-pro` para raciocínio final consolidado nos 3 eixos.
-- **Embeddings** → `google/gemini-embedding-001` (3072-d).
+Abas:
+- **Usuários** (item 2 acima)
+- **Auditoria** (item 3 acima)
+- **IA — Modelos open source** (Ollama endpoint, modelos disponíveis, timeout)
+- **IA — Modelos pagos** (OpenAI, Anthropic, Google — chave via `add_secret`, refs armazenadas)
+- **Bases de Conhecimento** (buckets, coleções vetoriais, política de retenção)
+- **Banco de Dados** (info read-only: host mascarado, versão, tamanho — via `supabase--read_query`)
+- **Repositório de artefatos** (URL do registry, política de imagens, retenção)
+- **Configuração do Córtex** (limites de tokens, modelo padrão por rota, temperatura, top-k RAG)
+- **SMTP** (host, porta, usuário, from, TLS) — só armazena
+- **SMS** (provider, sender id, endpoint) — só armazena
+- **WhatsApp** (phone number id, business account id, template default) — só armazena
 
-O roteador (`src/lib/cortex/router.server.ts`) decide por: mime, tamanho, presença de imagem, e flag `sensivel` (LGPD). Cada análise persiste `modelo_usado` para transparência.
-
-## Etapa 3 — Pipeline de ingestão
-
-Server function `ingestDocumento({ alunoId, storagePath })`:
-
-1. Baixa do bucket via `supabaseAdmin`.
-2. Detecta tipo → roteador escolhe modelo.
-3. **Imagem** → Gemini multimodal (OCR + análise estrutural: erros recorrentes).
-4. **PDF/texto** → extrai texto, faz chunking (~1200 chars, overlap 150), gera embeddings, salva em `documento_chunks`.
-5. **CSV/XLSX** → parser (`papaparse` / `xlsx`) → estatísticas (média, desvio, quedas) armazenadas em `documentos_aluno.competencias`.
-6. Atualiza `status_ingestao` = `PROCESSADO` + `tom_emocional` + competências BNCC citadas.
-
-## Etapa 4 — RAG + Geração da análise
-
-Server function `gerarAnaliseCortex({ alunoId, publico })`:
-
-1. Busca notas/frequência estruturadas (mock atual + tabelas futuras).
-2. Embed da query "perfil integral do aluno" → busca top-8 chunks via `match_documento_chunks(alunoId, query_embedding)`.
-3. Monta prompt clínico com contexto RAG + regra **Zero Alucinação** ("se faltar dado, declare").
-4. Chama `gemini-2.5-pro` com `Output.object` estruturado nos 3 eixos + `plano_acao[]` (com `publico_alvo`, `prazo`, `acao`, `responsavel_sugerido`).
-5. Persiste em `cortex_analises`.
-
-## Etapa 5 — UI
-
-- Nova rota **`/cortex`** — console do orquestrador: seletor de aluno, feed de decisões de roteamento (qual modelo, por quê, custo estimado), timeline de ingestões.
-- Painel **"Análise Edu-Córtex"** integrado em **`/aluno/:id`** (nova aba):
-  - Upload multimodal (drag-drop imagem/PDF/CSV) com progresso de ingestão.
-  - Lista de documentos do dossiê com badge de status e modelo usado.
-  - Botão **"Gerar análise integral"** → escolhe público (Direção / Professores / Pais) → renderiza os 3 eixos em cards + timeline do plano de ação com badges de público-alvo.
-  - Toggle "citações RAG" mostrando trechos-fonte de cada insight.
-- Estado empty transparente ("RAG sem contexto suficiente — envie mais evidências").
-
-## Etapa 6 — Segurança & LGPD
-
-- Toda ingestão passa por `requireSupabaseAuth`.
-- Flag `sensivel` bloqueia envio ao gateway externo → roteia para prompt mais restrito no modelo `flash-lite` (proxy do "local").
-- Logs de acesso a dossiês em `cortex_audit`.
-- Nenhum secret no cliente; `LOVABLE_API_KEY` só em server functions.
+Só `admin` acessa. Botões "testar conexão" ficam desabilitados com tooltip "Ative uma integração real para testar".
 
 ## Detalhes técnicos
 
-- Stack: TanStack Start + `createServerFn` + `@ai-sdk/openai-compatible` apontando para `https://ai.gateway.lovable.dev/v1` com header `Lovable-API-Key`.
-- Parsers: `pdf-parse` (worker-compat check antes; fallback: enviar PDF direto ao Gemini como `file`), `papaparse`, `xlsx`.
-- Chunking: função utilitária pura em `src/lib/cortex/chunk.ts`.
-- Batching de embeddings: ≤ 100 inputs por request (limite Gemini).
-- `_authenticated/cortex` e `_authenticated/aluno/$id` (mover rotas sensíveis para o layout protegido gerenciado).
+**Migração SQL nova** (uma só, com GRANTs):
+```
+- CREATE TABLE profiles(id uuid PK ref auth.users, nome text, must_change_password bool default true, ativo bool default true, ultimo_login timestamptz, created_at, updated_at)
+- CREATE TABLE app_settings(chave text PK, valor jsonb, atualizado_por uuid, atualizado_em timestamptz)
+- CREATE TABLE audit_logs(id, actor_id, target_user_id, acao text, entidade text, entidade_id text, metadados jsonb, ip text, user_agent text, criado_em timestamptz)
+- GRANTs para authenticated (profiles: read own + admin all; app_settings/audit_logs: admin only)
+- RLS + policies usando has_role(auth.uid(),'admin')
+- Trigger on auth.users AFTER INSERT -> insert profile com must_change_password=true
+- Trigger on user_roles AFTER INSERT/DELETE -> insert em audit_logs
+- Backfill: profile do superadmin com must_change_password=true
+- Trigger updated_at nos dois
+```
 
-## Escopo desta primeira entrega
+**ServerFns novas** (`src/lib/admin/*.functions.ts`):
+- `listUsers`, `createUser`, `setUserActive`, `setUserRole`, `getProfile`, `updateProfile`
+- `logAuditEvent`, `listAuditLogs`
+- `getSetting`, `setSetting`, `listSettings`
 
-Vou entregar Etapas 1–5 completas com o pipeline funcionando ponta-a-ponta para **texto/PDF/imagem** (planilhas CSV entram como leitura estatística simples). Auditoria detalhada (Etapa 6 logs) fica como camada mínima (RLS + `criado_por`), sem tela de auditoria ainda.
+Todas com `requireSupabaseAuth` + checagem de role via `has_role` RPC. Mutações administrativas usam `supabaseAdmin` importado dentro do handler.
 
-Confirma que sigo com esse plano?
+**Rotas novas**:
+```text
+src/routes/reset-password.tsx                       (pública)
+src/routes/_authenticated/configuracoes/route.tsx   (shell + gate admin)
+src/routes/_authenticated/configuracoes/index.tsx   (redir p/ usuários)
+src/routes/_authenticated/configuracoes/usuarios.tsx
+src/routes/_authenticated/configuracoes/auditoria.tsx
+src/routes/_authenticated/configuracoes/ia-oss.tsx
+src/routes/_authenticated/configuracoes/ia-pagas.tsx
+src/routes/_authenticated/configuracoes/bases.tsx
+src/routes/_authenticated/configuracoes/banco.tsx
+src/routes/_authenticated/configuracoes/artefatos.tsx
+src/routes/_authenticated/configuracoes/cortex.tsx
+src/routes/_authenticated/configuracoes/smtp.tsx
+src/routes/_authenticated/configuracoes/sms.tsx
+src/routes/_authenticated/configuracoes/whatsapp.tsx
+```
+
+**Ajustes**:
+- `_authenticated/route.tsx`: adiciona check de `must_change_password` e link "Configurações" no `AppShell` quando o usuário for admin.
+- `auth.tsx`: refactor com zod, mensagens mapeadas, indicador de força.
+- `AppShell.tsx`: item de menu "Configurações" só para admin.
+
+## Fora de escopo (não implemento agora)
+- Envio real de e-mail/SMS/WhatsApp e testes de conexão.
+- MFA/TOTP.
+- SSO SAML governamental.
+- Rotação automática de segredos.
+
+Se aprovar, começo pela migração (aprovação separada do Cloud) e sigo com o código.
