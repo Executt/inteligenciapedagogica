@@ -49,7 +49,7 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
 });
 
 function ConfiguracoesPage() {
-  const search = useSearch({ from: "/_authenticated/configuracoes" });
+  const search = Route.useSearch();
   const navigate = useNavigate();
   const active = (search.tab ?? "usuarios") as TabId;
 
