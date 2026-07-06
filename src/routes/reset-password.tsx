@@ -24,7 +24,7 @@ export const Route = createFileRoute("/reset-password")({
 
 function ResetPasswordPage() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/reset-password" });
+  const search = Route.useSearch();
   const forced = search.forced === "1";
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
