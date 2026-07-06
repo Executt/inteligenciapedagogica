@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TurmasRouteImport } from './routes/turmas'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as IntervencaoRouteImport } from './routes/intervencao'
 import { Route as IntegracaoRouteImport } from './routes/integracao'
 import { Route as EscolaRouteImport } from './routes/escola'
@@ -21,10 +22,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TurmaIdRouteImport } from './routes/turma.$id'
 import { Route as AlunoIdRouteImport } from './routes/aluno.$id'
 import { Route as AuthenticatedCortexRouteImport } from './routes/_authenticated/cortex'
+import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 
 const TurmasRoute = TurmasRouteImport.update({
   id: '/turmas',
   path: '/turmas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntervencaoRoute = IntervencaoRouteImport.update({
@@ -81,6 +88,12 @@ const AuthenticatedCortexRoute = AuthenticatedCortexRouteImport.update({
   path: '/cortex',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConfiguracoesRoute =
+  AuthenticatedConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -90,7 +103,9 @@ export interface FileRoutesByFullPath {
   '/escola': typeof EscolaRoute
   '/integracao': typeof IntegracaoRoute
   '/intervencao': typeof IntervencaoRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/turmas': typeof TurmasRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
   '/turma/$id': typeof TurmaIdRoute
@@ -103,7 +118,9 @@ export interface FileRoutesByTo {
   '/escola': typeof EscolaRoute
   '/integracao': typeof IntegracaoRoute
   '/intervencao': typeof IntervencaoRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/turmas': typeof TurmasRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
   '/turma/$id': typeof TurmaIdRoute
@@ -118,7 +135,9 @@ export interface FileRoutesById {
   '/escola': typeof EscolaRoute
   '/integracao': typeof IntegracaoRoute
   '/intervencao': typeof IntervencaoRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/turmas': typeof TurmasRoute
+  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
   '/turma/$id': typeof TurmaIdRoute
@@ -133,7 +152,9 @@ export interface FileRouteTypes {
     | '/escola'
     | '/integracao'
     | '/intervencao'
+    | '/reset-password'
     | '/turmas'
+    | '/configuracoes'
     | '/cortex'
     | '/aluno/$id'
     | '/turma/$id'
@@ -146,7 +167,9 @@ export interface FileRouteTypes {
     | '/escola'
     | '/integracao'
     | '/intervencao'
+    | '/reset-password'
     | '/turmas'
+    | '/configuracoes'
     | '/cortex'
     | '/aluno/$id'
     | '/turma/$id'
@@ -160,7 +183,9 @@ export interface FileRouteTypes {
     | '/escola'
     | '/integracao'
     | '/intervencao'
+    | '/reset-password'
     | '/turmas'
+    | '/_authenticated/configuracoes'
     | '/_authenticated/cortex'
     | '/aluno/$id'
     | '/turma/$id'
@@ -175,6 +200,7 @@ export interface RootRouteChildren {
   EscolaRoute: typeof EscolaRoute
   IntegracaoRoute: typeof IntegracaoRoute
   IntervencaoRoute: typeof IntervencaoRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TurmasRoute: typeof TurmasRoute
   AlunoIdRoute: typeof AlunoIdRoute
   TurmaIdRoute: typeof TurmaIdRoute
@@ -187,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/turmas'
       fullPath: '/turmas'
       preLoaderRoute: typeof TurmasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/intervencao': {
@@ -266,14 +299,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCortexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/configuracoes': {
+      id: '/_authenticated/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCortexRoute: typeof AuthenticatedCortexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCortexRoute: AuthenticatedCortexRoute,
 }
 
@@ -289,6 +331,7 @@ const rootRouteChildren: RootRouteChildren = {
   EscolaRoute: EscolaRoute,
   IntegracaoRoute: IntegracaoRoute,
   IntervencaoRoute: IntervencaoRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TurmasRoute: TurmasRoute,
   AlunoIdRoute: AlunoIdRoute,
   TurmaIdRoute: TurmaIdRoute,
@@ -296,13 +339,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

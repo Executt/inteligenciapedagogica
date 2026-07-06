@@ -1,9 +1,15 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
-  LayoutDashboard, Building2, Upload, School, Users, User2, Sparkles, GraduationCap, Bell, Search, Brain,
+  LayoutDashboard, Building2, Upload, School, Users, User2, Sparkles, GraduationCap, Bell, Search, Brain, Settings, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { getMyProfile } from "@/lib/admin/profile.functions";
+import { logAuditEvent } from "@/lib/admin/audit.functions";
+import { Button } from "@/components/ui/button";
 
 const nav = [
   { to: "/", label: "Visão Geral", icon: LayoutDashboard },
@@ -16,8 +22,44 @@ const nav = [
   { to: "/cortex", label: "Edu-Córtex · IA", icon: Brain },
 ];
 
+const ROLE_LABEL: Record<string, string> = {
+  admin: "Superadmin",
+  direcao: "Direção",
+  coordenacao: "Coordenação",
+  professor: "Professor",
+  pais: "Pais/Responsáveis",
+};
+
+function initialsFrom(name?: string | null, email?: string | null) {
+  const src = (name || email || "??").trim();
+  const parts = src.split(/[\s@.]+/).filter(Boolean).slice(0, 2);
+  return parts.map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const profileFn = useServerFn(getMyProfile);
+  const logEvent = useServerFn(logAuditEvent);
+
+  const { data: profile } = useQuery({
+    queryKey: ["me", "profile"],
+    queryFn: () => profileFn({}),
+    staleTime: 60_000,
+  });
+
+  const isAdmin = profile?.roles?.includes("admin") ?? false;
+  const roleLabel = profile?.roles?.[0] ? ROLE_LABEL[profile.roles[0]] ?? profile.roles[0] : "—";
+
+  async function handleSignOut() {
+    try { await logEvent({ data: { acao: "auth.logout", entidade: "auth" } }); } catch { /* ignore */ }
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
   return (
     <div className="min-h-screen flex w-full bg-background">
       <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
@@ -50,6 +92,20 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+          {isAdmin && (
+            <Link
+              to="/configuracoes"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                pathname.startsWith("/configuracoes")
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <Settings className="h-4 w-4" />
+              <span>Configurações</span>
+            </Link>
+          )}
         </nav>
         <div className="p-4 border-t border-sidebar-border text-[11px] text-sidebar-foreground/60">
           v1.0 · Ambiente Homologação
@@ -71,12 +127,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
           <div className="flex items-center gap-2 pl-3 border-l border-border">
             <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">
-              MD
+              {initialsFrom(profile?.nome, null)}
             </div>
             <div className="text-xs leading-tight">
-              <div className="font-medium">Márcia Duarte</div>
-              <div className="text-muted-foreground">Coordenação · SME</div>
+              <div className="font-medium">{profile?.nome ?? "—"}</div>
+              <div className="text-muted-foreground">{roleLabel}</div>
             </div>
+            <Button variant="ghost" size="sm" onClick={handleSignOut} title="Sair" className="ml-1">
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </header>
         <main className="flex-1 overflow-auto">{children}</main>

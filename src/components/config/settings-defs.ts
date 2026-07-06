@@ -1,0 +1,117 @@
+import type { SettingDefinition } from "./SettingsForm";
+
+export const SETTING_DEFS: Record<string, SettingDefinition> = {
+  "ia-oss": {
+    chave: "ia.oss",
+    titulo: "IA — Modelos Open Source",
+    descricao: "Endpoints locais (Ollama/vLLM) usados para dados sensíveis sob LGPD. Nunca deixam a rede interna.",
+    fields: [
+      { key: "endpoint", label: "Endpoint Ollama", type: "url", placeholder: "http://ollama.cortex.svc:11434" },
+      { key: "modelo_padrao", label: "Modelo padrão", type: "text", placeholder: "deepseek-r1:14b" },
+      { key: "modelos_disponiveis", label: "Modelos disponíveis (um por linha)", type: "textarea", placeholder: "deepseek-r1:14b\nllama3.1:8b\nqwen2.5:14b" },
+      { key: "timeout_segundos", label: "Timeout (s)", type: "number", min: 5, max: 600 },
+      { key: "habilitado", label: "Habilitado", type: "boolean" },
+    ],
+  },
+  "ia-pagas": {
+    chave: "ia.pagas",
+    titulo: "IA — Modelos Pagos",
+    descricao: "Provedores externos usados apenas para dados anonimizados/não sensíveis.",
+    aviso: "As chaves de API não são armazenadas aqui. Configure-as no cofre de segredos.",
+    fields: [
+      { key: "provedor_padrao", label: "Provedor padrão", type: "text", placeholder: "google | openai | anthropic" },
+      { key: "modelo_padrao", label: "Modelo padrão", type: "text", placeholder: "gemini-2.5-pro" },
+      { key: "openai_ref", label: "Chave OpenAI (referência do secret)", type: "text", placeholder: "OPENAI_API_KEY" },
+      { key: "anthropic_ref", label: "Chave Anthropic (referência do secret)", type: "text", placeholder: "ANTHROPIC_API_KEY" },
+      { key: "google_ref", label: "Chave Google (referência do secret)", type: "text", placeholder: "GOOGLE_API_KEY" },
+      { key: "limite_tokens_dia", label: "Limite diário de tokens", type: "number", min: 0 },
+    ],
+  },
+  bases: {
+    chave: "kb",
+    titulo: "Bases de Conhecimento",
+    descricao: "Buckets e coleções vetoriais usados pelo pipeline RAG.",
+    fields: [
+      { key: "bucket_dossies", label: "Bucket de dossiês", type: "text", placeholder: "dossies" },
+      { key: "colecao_padrao", label: "Coleção vetorial padrão", type: "text", placeholder: "documento_chunks" },
+      { key: "top_k", label: "Top-K padrão", type: "number", min: 1, max: 50 },
+      { key: "retencao_dias", label: "Retenção (dias)", type: "number", min: 30 },
+      { key: "publica", label: "Base pública (documentos abertos)", type: "boolean" },
+    ],
+  },
+  banco: {
+    chave: "db",
+    titulo: "Banco de dados da aplicação",
+    descricao: "Referências operacionais do Postgres. Credenciais reais permanecem no cofre.",
+    fields: [
+      { key: "engine", label: "Engine", type: "text", placeholder: "Postgres 15 (pgvector)" },
+      { key: "regiao", label: "Região", type: "text", placeholder: "sa-east-1" },
+      { key: "janela_backup", label: "Janela de backup", type: "text", placeholder: "03:00-04:00 BRT" },
+      { key: "point_in_time_dias", label: "PITR (dias)", type: "number", min: 1, max: 35 },
+      { key: "read_replica", label: "Réplica de leitura", type: "boolean" },
+    ],
+  },
+  artefatos: {
+    chave: "artefatos",
+    titulo: "Repositório de artefatos",
+    descricao: "Registry de imagens e binários usados pelos serviços da plataforma.",
+    fields: [
+      { key: "registry_url", label: "Registry", type: "url", placeholder: "quay.io/edu-gov" },
+      { key: "namespace", label: "Namespace", type: "text", placeholder: "edu-gov" },
+      { key: "politica_tag", label: "Política de tag", type: "text", placeholder: "semver + digest imutável" },
+      { key: "retencao_dias", label: "Retenção (dias)", type: "number", min: 7 },
+      { key: "assinatura_cosign", label: "Assinatura Cosign obrigatória", type: "boolean" },
+    ],
+  },
+  cortex: {
+    chave: "cortex",
+    titulo: "Configuração do Córtex",
+    descricao: "Parâmetros de roteamento cognitivo, tokens e temperatura por eixo.",
+    fields: [
+      { key: "modelo_ingestao", label: "Modelo de ingestão", type: "text", placeholder: "gemini-2.5-flash" },
+      { key: "modelo_analise", label: "Modelo de análise", type: "text", placeholder: "gemini-2.5-pro" },
+      { key: "temperatura_analise", label: "Temperatura da análise", type: "number", min: 0, max: 2, step: 0.1 },
+      { key: "top_k_rag", label: "Top-K RAG", type: "number", min: 1, max: 50 },
+      { key: "tokens_max_saida", label: "Máx. tokens de saída", type: "number", min: 256, max: 32000 },
+      { key: "roteia_sensivel_local", label: "Sensível → sempre local", type: "boolean" },
+    ],
+  },
+  smtp: {
+    chave: "smtp",
+    titulo: "SMTP",
+    descricao: "Servidor SMTP usado para notificações e recuperação de senha.",
+    aviso: "As credenciais são armazenadas com criptografia at-rest. O envio real depende de habilitar a integração.",
+    fields: [
+      { key: "host", label: "Host", type: "text", placeholder: "smtp.gov.br" },
+      { key: "porta", label: "Porta", type: "number", min: 1, max: 65535 },
+      { key: "usuario", label: "Usuário", type: "text" },
+      { key: "senha_ref", label: "Senha (ref. do secret)", type: "text", placeholder: "SMTP_PASSWORD" },
+      { key: "from", label: "Remetente (from)", type: "email" },
+      { key: "tls", label: "TLS/STARTTLS", type: "boolean" },
+    ],
+  },
+  sms: {
+    chave: "sms",
+    titulo: "SMS",
+    descricao: "Provedor de SMS transacional para alertas críticos.",
+    fields: [
+      { key: "provedor", label: "Provedor", type: "text", placeholder: "twilio | zenvia | tim" },
+      { key: "sender_id", label: "Sender ID", type: "text", placeholder: "EDUGOV" },
+      { key: "endpoint", label: "Endpoint", type: "url" },
+      { key: "token_ref", label: "Token (ref. do secret)", type: "text", placeholder: "SMS_TOKEN" },
+      { key: "habilitado", label: "Habilitado", type: "boolean" },
+    ],
+  },
+  whatsapp: {
+    chave: "whatsapp",
+    titulo: "WhatsApp Business",
+    descricao: "Integração com WhatsApp Cloud API para comunicação com responsáveis.",
+    fields: [
+      { key: "phone_number_id", label: "Phone Number ID", type: "text" },
+      { key: "business_account_id", label: "Business Account ID", type: "text" },
+      { key: "token_ref", label: "Token permanente (ref. do secret)", type: "text", placeholder: "WHATSAPP_TOKEN" },
+      { key: "template_padrao", label: "Template padrão", type: "text", placeholder: "notificacao_pedagogica" },
+      { key: "habilitado", label: "Habilitado", type: "boolean" },
+    ],
+  },
+};

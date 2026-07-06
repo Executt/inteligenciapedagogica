@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          atualizado_por: string | null
+          chave: string
+          created_at: string
+          updated_at: string
+          valor: Json
+        }
+        Insert: {
+          atualizado_por?: string | null
+          chave: string
+          created_at?: string
+          updated_at?: string
+          valor?: Json
+        }
+        Update: {
+          atualizado_por?: string | null
+          chave?: string
+          created_at?: string
+          updated_at?: string
+          valor?: Json
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          acao: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          entidade: string | null
+          entidade_id: string | null
+          id: string
+          ip: string | null
+          metadados: Json
+          target_user_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          acao: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          entidade?: string | null
+          entidade_id?: string | null
+          id?: string
+          ip?: string | null
+          metadados?: Json
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          acao?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          entidade?: string | null
+          entidade_id?: string | null
+          id?: string
+          ip?: string | null
+          metadados?: Json
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       cortex_analises: {
         Row: {
           aluno_id: string
@@ -163,6 +229,36 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          must_change_password: boolean
+          nome: string | null
+          ultimo_login: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id: string
+          must_change_password?: boolean
+          nome?: string | null
+          ultimo_login?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          must_change_password?: boolean
+          nome?: string | null
+          ultimo_login?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -213,7 +309,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "direcao" | "coordenacao" | "professor" | "admin"
+      app_role: "direcao" | "coordenacao" | "professor" | "admin" | "pais"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -341,7 +437,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["direcao", "coordenacao", "professor", "admin"],
+      app_role: ["direcao", "coordenacao", "professor", "admin", "pais"],
     },
   },
 } as const
