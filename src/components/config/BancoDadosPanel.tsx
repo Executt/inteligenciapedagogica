@@ -39,7 +39,7 @@ export function BancoDadosPanel() {
   const filtered = conns.filter((c) => c.tipo === tipo);
 
   const form = useForm<ConnForm>({
-    resolver: zodResolver(connSchema),
+    resolver: zodResolver(connSchema) as any,
     defaultValues: { nome: "", uri: "", poolMax: 50, ssl: true },
   });
 

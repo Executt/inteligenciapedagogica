@@ -180,7 +180,7 @@ export function ProfissionaisPanel() {
 function NovoProfissionalDialog({ onAdd }: { onAdd: (p: Prof) => void }) {
   const [open, setOpen] = useState(false);
   const form = useForm<Form>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: { nome: "", cpf: "", matricula: "", email: "", cargo: "professor", vinculo: "concursado", disciplinas: [], turmas: [] },
   });
   const disciplinas = form.watch("disciplinas");
