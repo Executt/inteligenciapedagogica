@@ -128,7 +128,7 @@ export function ArtefatosPanel() {
   useEffect(() => {
     const persisted = (data as Persisted | null) ?? null;
     if (persisted && Array.isArray(persisted.providers)) {
-      setProviders(persisted.providers.map((p) => ({ credentialMode: "secret_manager" as CredentialMode, ...p })));
+      setProviders(persisted.providers.map((p) => ({ ...p, credentialMode: p.credentialMode ?? ("secret_manager" as CredentialMode) })));
       setBuckets(persisted.buckets ?? []);
     } else {
       setProviders(DEFAULT_STATE.providers);
