@@ -431,8 +431,8 @@ export function ArtefatosPanel() {
         </CardContent>
       </Card>
 
-      {uploadFor && <UploadDialog provider={uploadFor} buckets={buckets.filter((b) => b.providerId === uploadFor.id)} onClose={() => setUploadFor(null)} />}
-      {downloadFor && <DownloadDialog provider={downloadFor} buckets={buckets.filter((b) => b.providerId === downloadFor.id)} onClose={() => setDownloadFor(null)} />}
+      {uploadFor && <UploadDialog provider={uploadFor} buckets={buckets.filter((b) => b.providerId === uploadFor.id)} onClose={() => setUploadFor(null)} onHistory={pushHistory} />}
+      {downloadFor && <DownloadDialog provider={downloadFor} buckets={buckets.filter((b) => b.providerId === downloadFor.id)} onClose={() => setDownloadFor(null)} onHistory={pushHistory} />}
       {syncFor && (
         <SyncDialog
           provider={syncFor}
@@ -453,6 +453,15 @@ export function ArtefatosPanel() {
               })),
             ]);
             toast.success(`${items.length} item(ns) adicionados a partir de ${syncFor.nome}.`);
+            pushHistory({
+              kind: "sync",
+              providerId: syncFor.id,
+              providerNome: syncFor.nome,
+              arquivo: `${items.length} recurso(s) importados`,
+              duracaoMs: 0,
+              status: "ok",
+              detalhe: items.join(", "),
+            });
             setSyncFor(null);
           }}
         />
@@ -468,7 +477,78 @@ export function ArtefatosPanel() {
           }}
         />
       )}
+
+      <HistoryCard history={history} onClear={() => { setHistory([]); saveHistory([]); }} />
     </div>
+  );
+}
+
+/* ─────────────── History card ─────────────── */
+
+function HistoryCard({ history, onClear }: { history: HistoryEntry[]; onClear: () => void }) {
+  const [kind, setKind] = useState<"all" | OpKind>("all");
+  const filtered = kind === "all" ? history : history.filter((h) => h.kind === kind);
+
+  return (
+    <Card>
+      <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
+        <div>
+          <CardTitle className="text-sm flex items-center gap-2"><History className="h-4 w-4" /> Histórico de operações</CardTitle>
+          <CardDescription>Uploads, downloads e sincronizações — {history.length} evento(s) registrado(s) localmente.</CardDescription>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={kind} onValueChange={(v: "all" | OpKind) => setKind(v)}>
+            <SelectTrigger className="h-8 w-40 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="upload">Uploads</SelectItem>
+              <SelectItem value="download">Downloads</SelectItem>
+              <SelectItem value="sync">Sincronizações</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button size="sm" variant="ghost" onClick={onClear} disabled={history.length === 0}>Limpar</Button>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-40">Quando</TableHead>
+              <TableHead className="w-24">Tipo</TableHead>
+              <TableHead>Provider</TableHead>
+              <TableHead>Arquivo / recurso</TableHead>
+              <TableHead className="w-24">Duração</TableHead>
+              <TableHead className="w-32">Política</TableHead>
+              <TableHead className="w-28">Usuário</TableHead>
+              <TableHead className="w-24 text-right">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.map((h) => (
+              <TableRow key={h.id}>
+                <TableCell className="text-xs">{new Date(h.at).toLocaleString("pt-BR")}</TableCell>
+                <TableCell><Badge variant="outline" className="capitalize">{h.kind}</Badge></TableCell>
+                <TableCell className="text-xs">{h.providerNome}</TableCell>
+                <TableCell className="text-xs font-mono truncate max-w-[260px]" title={h.arquivo}>{h.arquivo}</TableCell>
+                <TableCell className="text-xs">{h.duracaoMs > 0 ? `${(h.duracaoMs / 1000).toFixed(1)}s` : "—"}</TableCell>
+                <TableCell className="text-[11px]">
+                  {h.policy ? (h.policy === "keep-n" ? `Últimas ${h.keepN ?? 5}` : VERSION_POLICY_LABEL[h.policy]) : "—"}
+                </TableCell>
+                <TableCell className="text-xs">{h.usuario}</TableCell>
+                <TableCell className="text-right">
+                  <Badge variant={h.status === "ok" ? "default" : h.status === "erro" ? "destructive" : "secondary"} className="text-[10px]">
+                    {h.status}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            ))}
+            {filtered.length === 0 && (
+              <TableRow><TableCell colSpan={8} className="text-center text-xs text-muted-foreground py-6">Nenhuma operação registrada.</TableCell></TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }
 
