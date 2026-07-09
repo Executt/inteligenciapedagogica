@@ -121,6 +121,7 @@ function ConfiguracoesPage() {
             {active === "assistente" && <AssistentePanel />}
             {active === "banco" && <BancoDadosPanel />}
             {active === "artefatos" && <ArtefatosPanel />}
+            {active === "pulse" && <IntegracaoPulsePanel />}
             {active === "smtp" && <ComunicacaoPanel canal="smtp" />}
             {active === "sms" && <ComunicacaoPanel canal="sms" />}
             {active === "whatsapp" && <ComunicacaoPanel canal="whatsapp" />}
