@@ -168,6 +168,23 @@ export function ArtefatosPanel() {
   const [syncFor, setSyncFor] = useState<Provider | null>(null);
   const [credFor, setCredFor] = useState<Provider | null>(null);
 
+  const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory());
+  const pushHistory = (entry: Omit<HistoryEntry, "id" | "at" | "usuario">) => {
+    setHistory((prev) => {
+      const next: HistoryEntry[] = [
+        {
+          ...entry,
+          id: crypto.randomUUID(),
+          at: new Date().toISOString(),
+          usuario: "admin@edu-gov",
+        },
+        ...prev,
+      ].slice(0, HISTORY_MAX);
+      saveHistory(next);
+      return next;
+    });
+  };
+
   useEffect(() => {
     const persisted = (data as Persisted | null) ?? null;
     if (persisted && Array.isArray(persisted.providers)) {
