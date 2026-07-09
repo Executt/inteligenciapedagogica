@@ -39,6 +39,7 @@ const TABS: TabDef[] = [
 
   { id: "banco", label: "Banco de Dados", icon: Database, group: "Infraestrutura" },
   { id: "artefatos", label: "Repositórios & Artefatos", icon: Package, group: "Infraestrutura" },
+  { id: "pulse", label: "Integração Pulse", icon: Webhook, group: "Infraestrutura" },
 
   { id: "smtp", label: "SMTP", icon: Mail, group: "Comunicação" },
   { id: "sms", label: "SMS", icon: MessageSquare, group: "Comunicação" },
