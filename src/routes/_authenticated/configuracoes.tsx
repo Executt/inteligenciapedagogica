@@ -16,9 +16,10 @@ import { AssistentePanel } from "@/components/config/AssistentePanel";
 import { InstituicaoPanel } from "@/components/config/InstituicaoPanel";
 import { ProfissionaisPanel } from "@/components/config/ProfissionaisPanel";
 import { ComunicacaoPanel } from "@/components/config/ComunicacaoPanel";
+import { IntegracaoPulsePanel } from "@/components/config/IntegracaoPulsePanel";
 import {
   Users, ScrollText, BrainCircuit, Cpu, Database, Package, Sparkles, Mail, MessageSquare, Phone, BookOpen,
-  Building2, Bot, GraduationCap,
+  Building2, Bot, GraduationCap, Webhook,
 } from "lucide-react";
 
 type TabDef = { id: string; label: string; icon: any; group: string };
@@ -38,6 +39,7 @@ const TABS: TabDef[] = [
 
   { id: "banco", label: "Banco de Dados", icon: Database, group: "Infraestrutura" },
   { id: "artefatos", label: "Repositórios & Artefatos", icon: Package, group: "Infraestrutura" },
+  { id: "pulse", label: "Integração Pulse", icon: Webhook, group: "Infraestrutura" },
 
   { id: "smtp", label: "SMTP", icon: Mail, group: "Comunicação" },
   { id: "sms", label: "SMS", icon: MessageSquare, group: "Comunicação" },
@@ -119,6 +121,7 @@ function ConfiguracoesPage() {
             {active === "assistente" && <AssistentePanel />}
             {active === "banco" && <BancoDadosPanel />}
             {active === "artefatos" && <ArtefatosPanel />}
+            {active === "pulse" && <IntegracaoPulsePanel />}
             {active === "smtp" && <ComunicacaoPanel canal="smtp" />}
             {active === "sms" && <ComunicacaoPanel canal="sms" />}
             {active === "whatsapp" && <ComunicacaoPanel canal="whatsapp" />}
