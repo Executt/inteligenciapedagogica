@@ -651,71 +651,175 @@ function CredentialDialog({ provider, onClose, onSave }: {
 
 /* ─────────────── Upload dialog ─────────────── */
 
-type UploadJob = { id: string; nome: string; tamanho: number; progresso: number; status: "aguardando" | "enviando" | "ok" | "erro"; erro?: string };
+type UploadJob = {
+  id: string;
+  nome: string;
+  tamanho: number;
+  progresso: number;
+  status: "aguardando" | "enviando" | "pausado" | "cancelado" | "ok" | "erro";
+  erro?: string;
+  startedAt: number;
+  finishedAt?: number;
+  policy: VersionPolicy;
+  keepN: number;
+  willFail?: boolean;
+};
 
-function UploadDialog({ provider, buckets, onClose }: { provider: Provider; buckets: Bucket[]; onClose: () => void }) {
+function UploadDialog({
+  provider,
+  buckets,
+  onClose,
+  onHistory,
+}: {
+  provider: Provider;
+  buckets: Bucket[];
+  onClose: () => void;
+  onHistory: (entry: Omit<HistoryEntry, "id" | "at" | "usuario">) => void;
+}) {
   const [target, setTarget] = useState(buckets[0]?.id ?? "");
+  const [policy, setPolicy] = useState<VersionPolicy>("keep-all");
+  const [keepN, setKeepN] = useState(5);
   const [jobs, setJobs] = useState<UploadJob[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const timers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
+
+  function stopTimer(id: string) {
+    const t = timers.current[id];
+    if (t) { clearInterval(t); delete timers.current[id]; }
+  }
 
   function enqueue(files: FileList | null) {
     if (!files) return;
     const items: UploadJob[] = Array.from(files).map((f) => ({
-      id: crypto.randomUUID(), nome: f.name, tamanho: f.size, progresso: 0, status: "aguardando",
+      id: crypto.randomUUID(),
+      nome: f.name,
+      tamanho: f.size,
+      progresso: 0,
+      status: "aguardando",
+      startedAt: Date.now(),
+      policy,
+      keepN,
     }));
     setJobs((prev) => [...items, ...prev]);
     items.forEach((j) => runUpload(j.id));
   }
 
   function runUpload(id: string) {
-    setJobs((prev) => prev.map((j) => j.id === id ? { ...j, status: "enviando" } : j));
+    stopTimer(id);
+    setJobs((prev) => prev.map((j) => j.id === id ? { ...j, status: "enviando", startedAt: j.startedAt || Date.now() } : j));
     const willFail = Math.random() < 0.12;
-    let progress = 0;
-    const timer = setInterval(() => {
-      progress += 8 + Math.random() * 14;
-      if (progress >= 100) {
-        clearInterval(timer);
-        if (willFail) {
-          setJobs((prev) => prev.map((j) => j.id === id ? { ...j, status: "erro", progresso: 100, erro: provider.tipo === "sftp" ? "SSH_DISCONNECT: broken pipe" : "HTTP 507 Insufficient Storage" } : j));
-          const nome = jobs.find((j) => j.id === id)?.nome ?? "arquivo";
-          toast.error(`Falha ao enviar ${nome}.`);
-        } else {
-          setJobs((prev) => prev.map((j) => j.id === id ? { ...j, status: "ok", progresso: 100 } : j));
-          const nome = jobs.find((j) => j.id === id)?.nome ?? "arquivo";
-          toast.success(`${nome} enviado para ${provider.nome}.`);
+    timers.current[id] = setInterval(() => {
+      setJobs((prev) => prev.map((j) => {
+        if (j.id !== id) return j;
+        if (j.status !== "enviando") return j;
+        const inc = 6 + Math.random() * 12;
+        const next = Math.min(100, j.progresso + inc);
+        if (next >= 100) {
+          stopTimer(id);
+          const finishedAt = Date.now();
+          if (willFail) {
+            const erro = provider.tipo === "sftp" ? "SSH_DISCONNECT: broken pipe" : "HTTP 507 Insufficient Storage";
+            toast.error(`Falha ao enviar ${j.nome}.`);
+            onHistory({
+              kind: "upload", providerId: provider.id, providerNome: provider.nome,
+              arquivo: j.nome, duracaoMs: finishedAt - j.startedAt, status: "erro",
+              detalhe: erro, policy: j.policy, keepN: j.keepN,
+            });
+            return { ...j, status: "erro", progresso: 100, erro, finishedAt };
+          }
+          toast.success(`${j.nome} enviado para ${provider.nome}.`);
+          onHistory({
+            kind: "upload", providerId: provider.id, providerNome: provider.nome,
+            arquivo: j.nome, duracaoMs: finishedAt - j.startedAt, status: "ok",
+            detalhe: `${(j.tamanho / 1024).toFixed(0)} KB`, policy: j.policy, keepN: j.keepN,
+          });
+          return { ...j, status: "ok", progresso: 100, finishedAt };
         }
-      } else {
-        setJobs((prev) => prev.map((j) => j.id === id ? { ...j, progresso: Math.min(99, progress) } : j));
-      }
+        return { ...j, progresso: next };
+      }));
     }, 220);
   }
 
+  function pause(id: string) {
+    stopTimer(id);
+    setJobs((prev) => prev.map((j) => j.id === id ? { ...j, status: "pausado" } : j));
+    toast.message("Upload pausado");
+  }
+  function resume(id: string) {
+    setJobs((prev) => prev.map((j) => j.id === id ? { ...j, status: "enviando" } : j));
+    runUpload(id);
+  }
+  function cancel(id: string) {
+    stopTimer(id);
+    setJobs((prev) => prev.map((j) => {
+      if (j.id !== id) return j;
+      const finishedAt = Date.now();
+      onHistory({
+        kind: "upload", providerId: provider.id, providerNome: provider.nome,
+        arquivo: j.nome, duracaoMs: finishedAt - j.startedAt, status: "cancelado",
+        policy: j.policy, keepN: j.keepN,
+      });
+      return { ...j, status: "cancelado", finishedAt };
+    }));
+    toast.warning("Upload cancelado");
+  }
+  function retry(id: string) {
+    setJobs((prev) => prev.map((j) => j.id === id ? { ...j, status: "enviando", progresso: 0, erro: undefined, startedAt: Date.now() } : j));
+    runUpload(id);
+  }
+
+  useEffect(() => () => { Object.keys(timers.current).forEach(stopTimer); }, []);
+
   return (
     <Dialog open onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><Upload className="h-4 w-4" /> Upload · {provider.nome}</DialogTitle>
-          <DialogDescription>Envio direto para {TIPO_LABEL[provider.tipo]}. Falhas exibem código do erro.</DialogDescription>
+          <DialogDescription>Envio direto para {TIPO_LABEL[provider.tipo]}. Configure versionamento e retenção antes de enviar.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
-          <div>
-            <Label className="text-xs">Destino</Label>
-            <Select value={target} onValueChange={setTarget}>
-              <SelectTrigger><SelectValue placeholder="Selecione um bucket/pasta" /></SelectTrigger>
-              <SelectContent>
-                {buckets.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
-                {buckets.length === 0 && <div className="px-2 py-1.5 text-xs text-muted-foreground">Nenhum bucket sincronizado.</div>}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-1">
+              <Label className="text-xs">Destino</Label>
+              <Select value={target} onValueChange={setTarget}>
+                <SelectTrigger><SelectValue placeholder="Bucket/pasta" /></SelectTrigger>
+                <SelectContent>
+                  {buckets.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}
+                  {buckets.length === 0 && <div className="px-2 py-1.5 text-xs text-muted-foreground">Nenhum bucket sincronizado.</div>}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-1">
+              <Label className="text-xs flex items-center gap-1"><GitBranch className="h-3 w-3" /> Política de versão</Label>
+              <Select value={policy} onValueChange={(v: VersionPolicy) => setPolicy(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="keep-all">Manter todas as versões</SelectItem>
+                  <SelectItem value="keep-latest">Manter apenas a última</SelectItem>
+                  <SelectItem value="keep-n">Manter as N últimas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-1">
+              <Label className="text-xs">N (quando aplicável)</Label>
+              <Input type="number" min={1} max={100} value={keepN} onChange={(e) => setKeepN(Math.max(1, Number(e.target.value) || 1))} disabled={policy !== "keep-n"} />
+            </div>
           </div>
+
+          <Alert className="py-2">
+            <Info className="h-3.5 w-3.5" />
+            <AlertDescription className="text-[11px]">
+              Aplicada no destino: <b>{VERSION_POLICY_LABEL[policy]}{policy === "keep-n" ? ` (${keepN})` : ""}</b>. Uploads em andamento podem ser <b>pausados</b>, <b>cancelados</b> ou <b>retomados</b>; falhas oferecem <b>reenvio</b>.
+            </AlertDescription>
+          </Alert>
 
           <input ref={inputRef} type="file" multiple className="hidden" onChange={(e) => enqueue(e.target.files)} />
           <Button variant="outline" onClick={() => inputRef.current?.click()} disabled={!target}>
             <Upload className="h-4 w-4 mr-1" /> Selecionar arquivos
           </Button>
 
-          <div className="max-h-64 overflow-auto divide-y">
+          <div className="max-h-72 overflow-auto divide-y">
             {jobs.map((j) => (
               <div key={j.id} className="py-2">
                 <div className="flex items-center justify-between text-xs">
@@ -728,8 +832,37 @@ function UploadDialog({ provider, buckets, onClose }: { provider: Provider; buck
                   {j.status === "ok" && <CheckCircle2 className="h-3.5 w-3.5 text-success" />}
                   {j.status === "erro" && <AlertCircle className="h-3.5 w-3.5 text-destructive" />}
                   {j.status === "enviando" && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
+                  {j.status === "pausado" && <Pause className="h-3.5 w-3.5 text-muted-foreground" />}
+                  {j.status === "cancelado" && <X className="h-3.5 w-3.5 text-muted-foreground" />}
                 </div>
-                {j.erro && <div className="text-[10px] text-destructive mt-0.5">{j.erro}</div>}
+                <div className="flex items-center justify-between mt-1">
+                  <div className="text-[10px] text-muted-foreground">
+                    {VERSION_POLICY_LABEL[j.policy]}{j.policy === "keep-n" ? ` · N=${j.keepN}` : ""}
+                    {j.erro && <span className="text-destructive ml-2">· {j.erro}</span>}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {j.status === "enviando" && (
+                      <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => pause(j.id)}>
+                        <Pause className="h-3 w-3" />
+                      </Button>
+                    )}
+                    {j.status === "pausado" && (
+                      <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => resume(j.id)}>
+                        <Play className="h-3 w-3" />
+                      </Button>
+                    )}
+                    {(j.status === "enviando" || j.status === "pausado") && (
+                      <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => cancel(j.id)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                    {(j.status === "erro" || j.status === "cancelado") && (
+                      <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => retry(j.id)}>
+                        <RotateCcw className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
             {jobs.length === 0 && <div className="text-xs text-muted-foreground py-6 text-center">Nenhum envio ainda.</div>}
@@ -744,13 +877,37 @@ function UploadDialog({ provider, buckets, onClose }: { provider: Provider; buck
 
 /* ─────────────── Download dialog ─────────────── */
 
-type RemoteFile = { nome: string; tamanho: number };
+type RemoteFile = { nome: string; tamanho: number; versoes?: number };
+type DownloadJob = {
+  progresso: number;
+  status: "em_andamento" | "pausado" | "cancelado" | "ok" | "erro";
+  startedAt: number;
+  erro?: string;
+};
 
-function DownloadDialog({ provider, buckets, onClose }: { provider: Provider; buckets: Bucket[]; onClose: () => void }) {
+function DownloadDialog({
+  provider,
+  buckets,
+  onClose,
+  onHistory,
+}: {
+  provider: Provider;
+  buckets: Bucket[];
+  onClose: () => void;
+  onHistory: (entry: Omit<HistoryEntry, "id" | "at" | "usuario">) => void;
+}) {
   const [target, setTarget] = useState(buckets[0]?.id ?? "");
   const [files, setFiles] = useState<RemoteFile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [progresso, setProgresso] = useState<Record<string, number>>({});
+  const [policy, setPolicy] = useState<VersionPolicy>("keep-latest");
+  const [keepN, setKeepN] = useState(3);
+  const [jobs, setJobs] = useState<Record<string, DownloadJob>>({});
+  const timers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
+
+  function stopTimer(name: string) {
+    const t = timers.current[name];
+    if (t) { clearInterval(t); delete timers.current[name]; }
+  }
 
   async function listar() {
     if (!target) return;
@@ -759,10 +916,10 @@ function DownloadDialog({ provider, buckets, onClose }: { provider: Provider; bu
       await simulate(700, undefined, 0.08);
       const bucket = buckets.find((b) => b.id === target)!;
       setFiles([
-        { nome: `${bucket.nome}/dossies/aluno_1024.pdf`, tamanho: 842_112 },
-        { nome: `${bucket.nome}/dossies/aluno_1025.pdf`, tamanho: 993_812 },
-        { nome: `${bucket.nome}/relatorios/consolidado_2026Q1.xlsx`, tamanho: 214_555 },
-        { nome: `${bucket.nome}/media/prova_matematica.jpg`, tamanho: 1_245_998 },
+        { nome: `${bucket.nome}/dossies/aluno_1024.pdf`, tamanho: 842_112, versoes: 4 },
+        { nome: `${bucket.nome}/dossies/aluno_1025.pdf`, tamanho: 993_812, versoes: 2 },
+        { nome: `${bucket.nome}/relatorios/consolidado_2026Q1.xlsx`, tamanho: 214_555, versoes: 7 },
+        { nome: `${bucket.nome}/media/prova_matematica.jpg`, tamanho: 1_245_998, versoes: 1 },
       ]);
     } catch (e: any) {
       toast.error(`Não foi possível listar: ${e.message}`);
@@ -770,62 +927,157 @@ function DownloadDialog({ provider, buckets, onClose }: { provider: Provider; bu
   }
 
   function baixar(f: RemoteFile) {
+    stopTimer(f.nome);
     const willFail = Math.random() < 0.1;
-    let p = 0;
-    const timer = setInterval(() => {
-      p += 10 + Math.random() * 15;
-      if (p >= 100) {
-        clearInterval(timer);
-        setProgresso((s) => ({ ...s, [f.nome]: 100 }));
-        if (willFail) toast.error(`Falha ao baixar ${f.nome} — 403 Forbidden`);
-        else toast.success(`Download concluído: ${f.nome}`);
-      } else {
-        setProgresso((s) => ({ ...s, [f.nome]: p }));
-      }
+    const startedAt = Date.now();
+    setJobs((s) => ({ ...s, [f.nome]: { progresso: 0, status: "em_andamento", startedAt } }));
+    timers.current[f.nome] = setInterval(() => {
+      setJobs((s) => {
+        const cur = s[f.nome];
+        if (!cur || cur.status !== "em_andamento") return s;
+        const next = Math.min(100, cur.progresso + 8 + Math.random() * 14);
+        if (next >= 100) {
+          stopTimer(f.nome);
+          const finishedAt = Date.now();
+          if (willFail) {
+            toast.error(`Falha ao baixar ${f.nome} — 403 Forbidden`);
+            onHistory({
+              kind: "download", providerId: provider.id, providerNome: provider.nome,
+              arquivo: f.nome, duracaoMs: finishedAt - startedAt, status: "erro",
+              detalhe: "403 Forbidden", policy, keepN,
+            });
+            return { ...s, [f.nome]: { ...cur, progresso: 100, status: "erro", erro: "403 Forbidden" } };
+          }
+          toast.success(`Download concluído: ${f.nome}`);
+          onHistory({
+            kind: "download", providerId: provider.id, providerNome: provider.nome,
+            arquivo: f.nome, duracaoMs: finishedAt - startedAt, status: "ok",
+            detalhe: `${(f.tamanho / 1024).toFixed(0)} KB · ${f.versoes ?? 1} versão(ões) presente(s)`,
+            policy, keepN,
+          });
+          return { ...s, [f.nome]: { ...cur, progresso: 100, status: "ok" } };
+        }
+        return { ...s, [f.nome]: { ...cur, progresso: next } };
+      });
     }, 200);
   }
 
+  function pause(name: string) {
+    stopTimer(name);
+    setJobs((s) => s[name] ? { ...s, [name]: { ...s[name], status: "pausado" } } : s);
+  }
+  function resume(name: string) {
+    setJobs((s) => s[name] ? { ...s, [name]: { ...s[name], status: "em_andamento" } } : s);
+    const f = files.find((x) => x.nome === name); if (f) baixar(f);
+  }
+  function cancel(name: string) {
+    stopTimer(name);
+    setJobs((s) => {
+      const cur = s[name]; if (!cur) return s;
+      onHistory({
+        kind: "download", providerId: provider.id, providerNome: provider.nome,
+        arquivo: name, duracaoMs: Date.now() - cur.startedAt, status: "cancelado", policy, keepN,
+      });
+      return { ...s, [name]: { ...cur, status: "cancelado" } };
+    });
+  }
+  function retry(name: string) {
+    const f = files.find((x) => x.nome === name); if (f) baixar(f);
+  }
+
+  useEffect(() => () => { Object.keys(timers.current).forEach(stopTimer); }, []);
+
   return (
     <Dialog open onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><Download className="h-4 w-4" /> Download · {provider.nome}</DialogTitle>
-          <DialogDescription>Liste arquivos remotos e baixe com progresso individual.</DialogDescription>
+          <DialogDescription>Escolha a política de versões que será considerada ao trazer arquivos para o Edu-Gov.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
+          <div className="grid grid-cols-4 gap-2 items-end">
+            <div className="col-span-2">
               <Label className="text-xs">Bucket / pasta</Label>
               <Select value={target} onValueChange={setTarget}>
                 <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                 <SelectContent>{buckets.map((b) => <SelectItem key={b.id} value={b.id}>{b.nome}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <Button variant="outline" onClick={listar} disabled={!target || loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-              <span className="ml-1">Listar</span>
-            </Button>
+            <div>
+              <Label className="text-xs flex items-center gap-1"><GitBranch className="h-3 w-3" /> Versões</Label>
+              <Select value={policy} onValueChange={(v: VersionPolicy) => setPolicy(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="keep-latest">Apenas a última</SelectItem>
+                  <SelectItem value="keep-all">Todas as versões</SelectItem>
+                  <SelectItem value="keep-n">Últimas N</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">N</Label>
+              <Input type="number" min={1} max={100} value={keepN} onChange={(e) => setKeepN(Math.max(1, Number(e.target.value) || 1))} disabled={policy !== "keep-n"} />
+            </div>
           </div>
 
-          <div className="max-h-64 overflow-auto divide-y">
+          <Button variant="outline" onClick={listar} disabled={!target || loading} size="sm">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            <span className="ml-1">Listar arquivos</span>
+          </Button>
+
+          <div className="max-h-72 overflow-auto divide-y">
             {files.map((f) => {
-              const p = progresso[f.nome] ?? 0;
+              const job = jobs[f.nome];
+              const p = job?.progresso ?? 0;
               return (
-                <div key={f.nome} className="py-2 flex items-center gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-mono truncate">{f.nome}</div>
+                <div key={f.nome} className="py-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-mono truncate">{f.nome}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {(f.tamanho / 1024).toFixed(0)} KB · {f.versoes ?? 1} versão(ões)
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {(!job || job.status === "ok" || job.status === "erro" || job.status === "cancelado") && (
+                        <Button size="sm" variant="outline" onClick={() => baixar(f)}>
+                          <Download className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      {job?.status === "em_andamento" && (
+                        <>
+                          <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => pause(f.nome)}><Pause className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => cancel(f.nome)}><X className="h-3.5 w-3.5" /></Button>
+                        </>
+                      )}
+                      {job?.status === "pausado" && (
+                        <>
+                          <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => resume(f.nome)}><Play className="h-3.5 w-3.5" /></Button>
+                          <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => cancel(f.nome)}><X className="h-3.5 w-3.5" /></Button>
+                        </>
+                      )}
+                      {(job?.status === "erro" || job?.status === "cancelado") && (
+                        <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => retry(f.nome)}><RotateCcw className="h-3.5 w-3.5" /></Button>
+                      )}
+                    </div>
+                  </div>
+                  {job && (
                     <div className="flex items-center gap-2 mt-1">
                       <Progress value={p} className="h-1.5 flex-1" />
                       <span className="text-[10px] w-10 text-right">{Math.round(p)}%</span>
+                      {job.status === "ok" && <CheckCircle2 className="h-3.5 w-3.5 text-success" />}
+                      {job.status === "erro" && <AlertCircle className="h-3.5 w-3.5 text-destructive" />}
+                      {job.status === "em_andamento" && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
+                      {job.status === "pausado" && <Pause className="h-3.5 w-3.5 text-muted-foreground" />}
+                      {job.status === "cancelado" && <X className="h-3.5 w-3.5 text-muted-foreground" />}
                     </div>
-                  </div>
-                  <div className="text-[10px] text-muted-foreground w-16 text-right">{(f.tamanho / 1024).toFixed(0)} KB</div>
-                  <Button size="sm" variant="outline" onClick={() => baixar(f)}><Download className="h-3.5 w-3.5" /></Button>
+                  )}
+                  {job?.erro && <div className="text-[10px] text-destructive mt-0.5">{job.erro}</div>}
                 </div>
               );
             })}
-            {files.length === 0 && <div className="text-xs text-muted-foreground py-6 text-center">Clique em "Listar" para descobrir arquivos.</div>}
+            {files.length === 0 && <div className="text-xs text-muted-foreground py-6 text-center">Clique em "Listar arquivos" para descobrir arquivos.</div>}
           </div>
         </div>
 
@@ -834,6 +1086,7 @@ function DownloadDialog({ provider, buckets, onClose }: { provider: Provider; bu
     </Dialog>
   );
 }
+
 
 /* ─────────────── Sync dialog ─────────────── */
 
