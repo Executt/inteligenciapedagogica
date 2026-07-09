@@ -18,8 +18,51 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import {
   Package, Plus, Trash2, Cloud, HardDrive, Loader2, Plug, Save, Info, Upload, Download,
   RefreshCw, Eye, EyeOff, ShieldCheck, KeyRound, AlertCircle, CheckCircle2, FolderTree, Lock,
+  Pause, Play, X, RotateCcw, History, GitBranch,
 } from "lucide-react";
 import { simulate } from "./_shared";
+
+/* ─────────────── Version / retention policies ─────────────── */
+
+type VersionPolicy = "keep-all" | "keep-latest" | "keep-n";
+const VERSION_POLICY_LABEL: Record<VersionPolicy, string> = {
+  "keep-all": "Manter todas as versões",
+  "keep-latest": "Manter apenas a última",
+  "keep-n": "Manter as N últimas",
+};
+
+/* ─────────────── Operation history (in-memory + localStorage) ─────────────── */
+
+type OpKind = "upload" | "download" | "sync";
+type OpStatus = "ok" | "erro" | "cancelado" | "em_andamento" | "pausado";
+type HistoryEntry = {
+  id: string;
+  kind: OpKind;
+  providerId: string;
+  providerNome: string;
+  arquivo: string;
+  usuario: string;
+  duracaoMs: number;
+  status: OpStatus;
+  detalhe?: string;
+  policy?: VersionPolicy;
+  keepN?: number;
+  at: string;
+};
+
+const HISTORY_KEY = "edugov.artefatos.history";
+const HISTORY_MAX = 200;
+
+function loadHistory(): HistoryEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(HISTORY_KEY);
+    return raw ? (JSON.parse(raw) as HistoryEntry[]) : [];
+  } catch { return []; }
+}
+function saveHistory(items: HistoryEntry[]) {
+  try { window.localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, HISTORY_MAX))); } catch {}
+}
 
 type ProviderTipo = "s3" | "minio" | "oci" | "gcs" | "onedrive" | "gdrive" | "ftp" | "sftp";
 
