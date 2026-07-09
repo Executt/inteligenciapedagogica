@@ -16,9 +16,10 @@ import { AssistentePanel } from "@/components/config/AssistentePanel";
 import { InstituicaoPanel } from "@/components/config/InstituicaoPanel";
 import { ProfissionaisPanel } from "@/components/config/ProfissionaisPanel";
 import { ComunicacaoPanel } from "@/components/config/ComunicacaoPanel";
+import { IntegracaoPulsePanel } from "@/components/config/IntegracaoPulsePanel";
 import {
   Users, ScrollText, BrainCircuit, Cpu, Database, Package, Sparkles, Mail, MessageSquare, Phone, BookOpen,
-  Building2, Bot, GraduationCap,
+  Building2, Bot, GraduationCap, Webhook,
 } from "lucide-react";
 
 type TabDef = { id: string; label: string; icon: any; group: string };

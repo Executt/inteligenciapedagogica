@@ -23,6 +23,7 @@ import { Route as TurmaIdRouteImport } from './routes/turma.$id'
 import { Route as AlunoIdRouteImport } from './routes/aluno.$id'
 import { Route as AuthenticatedCortexRouteImport } from './routes/_authenticated/cortex'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as ApiPublicPulseIngestRouteImport } from './routes/api/public/pulse/ingest'
 
 const TurmasRoute = TurmasRouteImport.update({
   id: '/turmas',
@@ -94,6 +95,11 @@ const AuthenticatedConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicPulseIngestRoute = ApiPublicPulseIngestRouteImport.update({
+  id: '/api/public/pulse/ingest',
+  path: '/api/public/pulse/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
   '/turma/$id': typeof TurmaIdRoute
+  '/api/public/pulse/ingest': typeof ApiPublicPulseIngestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
   '/turma/$id': typeof TurmaIdRoute
+  '/api/public/pulse/ingest': typeof ApiPublicPulseIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/_authenticated/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
   '/turma/$id': typeof TurmaIdRoute
+  '/api/public/pulse/ingest': typeof ApiPublicPulseIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/cortex'
     | '/aluno/$id'
     | '/turma/$id'
+    | '/api/public/pulse/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/cortex'
     | '/aluno/$id'
     | '/turma/$id'
+    | '/api/public/pulse/ingest'
   id:
     | '__root__'
     | '/'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cortex'
     | '/aluno/$id'
     | '/turma/$id'
+    | '/api/public/pulse/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   TurmasRoute: typeof TurmasRoute
   AlunoIdRoute: typeof AlunoIdRoute
   TurmaIdRoute: typeof TurmaIdRoute
+  ApiPublicPulseIngestRoute: typeof ApiPublicPulseIngestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -306,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/pulse/ingest': {
+      id: '/api/public/pulse/ingest'
+      path: '/api/public/pulse/ingest'
+      fullPath: '/api/public/pulse/ingest'
+      preLoaderRoute: typeof ApiPublicPulseIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -335,6 +355,7 @@ const rootRouteChildren: RootRouteChildren = {
   TurmasRoute: TurmasRoute,
   AlunoIdRoute: AlunoIdRoute,
   TurmaIdRoute: TurmaIdRoute,
+  ApiPublicPulseIngestRoute: ApiPublicPulseIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
