@@ -259,6 +259,45 @@ export type Database = {
         }
         Relationships: []
       }
+      pulse_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          external_id: string | null
+          id: string
+          ip: string | null
+          payload: Json
+          processed: boolean
+          received_at: string
+          source: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          external_id?: string | null
+          id?: string
+          ip?: string | null
+          payload?: Json
+          processed?: boolean
+          received_at?: string
+          source?: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          external_id?: string | null
+          id?: string
+          ip?: string | null
+          payload?: Json
+          processed?: boolean
+          received_at?: string
+          source?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
