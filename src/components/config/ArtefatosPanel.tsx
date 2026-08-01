@@ -1061,6 +1061,20 @@ function DownloadDialog({
                         {(f.tamanho / 1024).toFixed(0)} KB · {f.versoes ?? 1} versão(ões)
                       </div>
                     </div>
+                    <div className="w-40">
+                      <Select
+                        value={versaoDe(f)}
+                        onValueChange={(v) => setVersaoSel((s) => ({ ...s, [f.nome]: v }))}
+                        disabled={Boolean(job && job.status === "em_andamento")}
+                      >
+                        <SelectTrigger className="h-8 text-[11px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {versoesPermitidas(f).map((o) => (
+                            <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="flex items-center gap-1">
                       {(!job || job.status === "ok" || job.status === "erro" || job.status === "cancelado") && (
                         <Button size="sm" variant="outline" onClick={() => baixar(f)}>
