@@ -15,6 +15,7 @@ import { CortexRoutingPanel } from "@/components/config/CortexRoutingPanel";
 import { AssistentePanel } from "@/components/config/AssistentePanel";
 import { InstituicaoPanel } from "@/components/config/InstituicaoPanel";
 import { ProfissionaisPanel } from "@/components/config/ProfissionaisPanel";
+import { DisciplinasPanel } from "@/components/config/DisciplinasPanel";
 import { ComunicacaoPanel } from "@/components/config/ComunicacaoPanel";
 import { IntegracaoPulsePanel } from "@/components/config/IntegracaoPulsePanel";
 import {
