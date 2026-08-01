@@ -487,26 +487,82 @@ export function ArtefatosPanel() {
 
 function HistoryCard({ history, onClear }: { history: HistoryEntry[]; onClear: () => void }) {
   const [kind, setKind] = useState<"all" | OpKind>("all");
-  const filtered = kind === "all" ? history : history.filter((h) => h.kind === kind);
+  const [de, setDe] = useState("");
+  const [ate, setAte] = useState("");
+
+  const filtered = useMemo(() => history.filter((h) => {
+    if (kind !== "all" && h.kind !== kind) return false;
+    const ts = new Date(h.at).getTime();
+    if (de && ts < new Date(`${de}T00:00:00`).getTime()) return false;
+    if (ate && ts > new Date(`${ate}T23:59:59`).getTime()) return false;
+    return true;
+  }), [history, kind, de, ate]);
+
+  function exportCsv() {
+    if (filtered.length === 0) { toast.error("Nenhuma operação no filtro atual."); return; }
+    const cols = ["quando", "tipo", "provider", "arquivo", "duracao_s", "politica_versao", "keep_n", "usuario", "status", "detalhe"];
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const linhas = filtered.map((h) => [
+      new Date(h.at).toISOString(),
+      h.kind,
+      h.providerNome,
+      h.arquivo,
+      (h.duracaoMs / 1000).toFixed(2),
+      h.policy ? VERSION_POLICY_LABEL[h.policy] : "",
+      h.policy === "keep-n" ? h.keepN ?? "" : "",
+      h.usuario,
+      h.status,
+      h.detalhe ?? "",
+    ].map(esc).join(";"));
+    const csv = ["\uFEFF" + cols.join(";"), ...linhas].join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+    a.href = url;
+    a.download = `edugov-artefatos-historico-${kind}-${stamp}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${filtered.length} operação(ões) exportada(s) em CSV.`);
+  }
 
   return (
     <Card>
-      <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
-        <div>
-          <CardTitle className="text-sm flex items-center gap-2"><History className="h-4 w-4" /> Histórico de operações</CardTitle>
-          <CardDescription>Uploads, downloads e sincronizações — {history.length} evento(s) registrado(s) localmente.</CardDescription>
-        </div>
-        <div className="flex items-center gap-2">
-          <Select value={kind} onValueChange={(v: "all" | OpKind) => setKind(v)}>
-            <SelectTrigger className="h-8 w-40 text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="upload">Uploads</SelectItem>
-              <SelectItem value="download">Downloads</SelectItem>
-              <SelectItem value="sync">Sincronizações</SelectItem>
-            </SelectContent>
-          </Select>
+      <CardHeader className="pb-3 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-sm flex items-center gap-2"><History className="h-4 w-4" /> Histórico de operações</CardTitle>
+            <CardDescription>Uploads, downloads e sincronizações — {history.length} evento(s) registrado(s) localmente.</CardDescription>
+          </div>
           <Button size="sm" variant="ghost" onClick={onClear} disabled={history.length === 0}>Limpar</Button>
+        </div>
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="w-40">
+            <Label className="text-xs">Tipo</Label>
+            <Select value={kind} onValueChange={(v: "all" | OpKind) => setKind(v)}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="upload">Uploads</SelectItem>
+                <SelectItem value="download">Downloads</SelectItem>
+                <SelectItem value="sync">Sincronizações</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-40">
+            <Label className="text-xs">De</Label>
+            <Input type="date" value={de} onChange={(e) => setDe(e.target.value)} className="h-8 text-xs" />
+          </div>
+          <div className="w-40">
+            <Label className="text-xs">Até</Label>
+            <Input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="h-8 text-xs" />
+          </div>
+          {(de || ate || kind !== "all") && (
+            <Button size="sm" variant="ghost" onClick={() => { setDe(""); setAte(""); setKind("all"); }}>Limpar filtros</Button>
+          )}
+          <Button size="sm" variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
+            <Download className="h-3.5 w-3.5 mr-1" /> Exportar CSV ({filtered.length})
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -543,7 +599,7 @@ function HistoryCard({ history, onClear }: { history: HistoryEntry[]; onClear: (
               </TableRow>
             ))}
             {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={8} className="text-center text-xs text-muted-foreground py-6">Nenhuma operação registrada.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-xs text-muted-foreground py-6">Nenhuma operação no filtro atual.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -901,12 +957,33 @@ function DownloadDialog({
   const [loading, setLoading] = useState(false);
   const [policy, setPolicy] = useState<VersionPolicy>("keep-latest");
   const [keepN, setKeepN] = useState(3);
+  const [versaoSel, setVersaoSel] = useState<Record<string, string>>({});
   const [jobs, setJobs] = useState<Record<string, DownloadJob>>({});
   const timers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
 
   function stopTimer(name: string) {
     const t = timers.current[name];
     if (t) { clearInterval(t); delete timers.current[name]; }
+  }
+
+  /** Versões que a política de retenção permite baixar para o arquivo. */
+  function versoesPermitidas(f: RemoteFile): { value: string; label: string }[] {
+    const total = f.versoes ?? 1;
+    const nums = Array.from({ length: total }, (_, i) => total - i); // mais recente primeiro
+    if (policy === "keep-latest") {
+      return [{ value: `v${total}`, label: `v${total} (última)` }];
+    }
+    const permitidas = policy === "keep-n" ? nums.slice(0, keepN) : nums;
+    return [
+      { value: "todas", label: `Todas as permitidas (${permitidas.length})` },
+      ...permitidas.map((n) => ({ value: `v${n}`, label: n === total ? `v${n} (última)` : `v${n}` })),
+    ];
+  }
+
+  function versaoDe(f: RemoteFile): string {
+    const opts = versoesPermitidas(f);
+    const atual = versaoSel[f.nome];
+    return atual && opts.some((o) => o.value === atual) ? atual : opts[0]!.value;
   }
 
   async function listar() {
@@ -948,11 +1025,12 @@ function DownloadDialog({
             });
             return { ...s, [f.nome]: { ...cur, progresso: 100, status: "erro", erro: "403 Forbidden" } };
           }
-          toast.success(`Download concluído: ${f.nome}`);
+          const versao = versaoDe(f);
+          toast.success(`Download concluído: ${f.nome} · ${versao === "todas" ? "todas as versões permitidas" : versao}`);
           onHistory({
             kind: "download", providerId: provider.id, providerNome: provider.nome,
-            arquivo: f.nome, duracaoMs: finishedAt - startedAt, status: "ok",
-            detalhe: `${(f.tamanho / 1024).toFixed(0)} KB · ${f.versoes ?? 1} versão(ões) presente(s)`,
+            arquivo: `${f.nome}@${versao}`, duracaoMs: finishedAt - startedAt, status: "ok",
+            detalhe: `${(f.tamanho / 1024).toFixed(0)} KB · ${f.versoes ?? 1} versão(ões) no provider · baixado: ${versao}`,
             policy, keepN,
           });
           return { ...s, [f.nome]: { ...cur, progresso: 100, status: "ok" } };
@@ -1038,6 +1116,20 @@ function DownloadDialog({
                       <div className="text-[10px] text-muted-foreground">
                         {(f.tamanho / 1024).toFixed(0)} KB · {f.versoes ?? 1} versão(ões)
                       </div>
+                    </div>
+                    <div className="w-40">
+                      <Select
+                        value={versaoDe(f)}
+                        onValueChange={(v) => setVersaoSel((s) => ({ ...s, [f.nome]: v }))}
+                        disabled={Boolean(job && job.status === "em_andamento")}
+                      >
+                        <SelectTrigger className="h-8 text-[11px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {versoesPermitidas(f).map((o) => (
+                            <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="flex items-center gap-1">
                       {(!job || job.status === "ok" || job.status === "erro" || job.status === "cancelado") && (

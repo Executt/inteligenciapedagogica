@@ -298,6 +298,30 @@ export type Database = {
         }
         Relationships: []
       }
+      pulse_ingest_nonces: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          nonce: string
+          request_ts: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          nonce: string
+          request_ts: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          nonce?: string
+          request_ts?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -346,6 +370,7 @@ export type Database = {
           texto: string
         }[]
       }
+      purge_pulse_nonces: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "direcao" | "coordenacao" | "professor" | "admin" | "pais"

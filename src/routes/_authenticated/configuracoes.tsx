@@ -15,6 +15,7 @@ import { CortexRoutingPanel } from "@/components/config/CortexRoutingPanel";
 import { AssistentePanel } from "@/components/config/AssistentePanel";
 import { InstituicaoPanel } from "@/components/config/InstituicaoPanel";
 import { ProfissionaisPanel } from "@/components/config/ProfissionaisPanel";
+import { DisciplinasPanel } from "@/components/config/DisciplinasPanel";
 import { ComunicacaoPanel } from "@/components/config/ComunicacaoPanel";
 import { IntegracaoPulsePanel } from "@/components/config/IntegracaoPulsePanel";
 import {
@@ -30,6 +31,7 @@ const TABS: TabDef[] = [
 
   { id: "instituicao", label: "Instituição Escolar", icon: Building2, group: "Gestão Institucional" },
   { id: "profissionais", label: "Profissionais & Disciplinas", icon: GraduationCap, group: "Gestão Institucional" },
+  { id: "disciplinas", label: "Disciplinas & Materiais", icon: BookOpen, group: "Gestão Institucional" },
 
   { id: "cortex", label: "Roteamento do Córtex", icon: Sparkles, group: "Orquestração de IA" },
   { id: "ia-oss", label: "Modelos Open Source", icon: Cpu, group: "Orquestração de IA" },
@@ -115,6 +117,7 @@ function ConfiguracoesPage() {
             {active === "auditoria" && <AuditPanel />}
             {active === "instituicao" && <InstituicaoPanel />}
             {active === "profissionais" && <ProfissionaisPanel />}
+            {active === "disciplinas" && <DisciplinasPanel />}
             {active === "cortex" && <CortexRoutingPanel />}
             {active === "ia-oss" && <ModelosIAPanel categoria="oss" />}
             {active === "ia-pagas" && <ModelosIAPanel categoria="paga" />}
