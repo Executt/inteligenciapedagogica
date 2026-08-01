@@ -969,11 +969,12 @@ function DownloadDialog({
             });
             return { ...s, [f.nome]: { ...cur, progresso: 100, status: "erro", erro: "403 Forbidden" } };
           }
-          toast.success(`Download concluído: ${f.nome}`);
+          const versao = versaoDe(f);
+          toast.success(`Download concluído: ${f.nome} · ${versao === "todas" ? "todas as versões permitidas" : versao}`);
           onHistory({
             kind: "download", providerId: provider.id, providerNome: provider.nome,
-            arquivo: f.nome, duracaoMs: finishedAt - startedAt, status: "ok",
-            detalhe: `${(f.tamanho / 1024).toFixed(0)} KB · ${f.versoes ?? 1} versão(ões) presente(s)`,
+            arquivo: `${f.nome}@${versao}`, duracaoMs: finishedAt - startedAt, status: "ok",
+            detalhe: `${(f.tamanho / 1024).toFixed(0)} KB · ${f.versoes ?? 1} versão(ões) no provider · baixado: ${versao}`,
             policy, keepN,
           });
           return { ...s, [f.nome]: { ...cur, progresso: 100, status: "ok" } };
