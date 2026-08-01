@@ -31,6 +31,7 @@ const TABS: TabDef[] = [
 
   { id: "instituicao", label: "Instituição Escolar", icon: Building2, group: "Gestão Institucional" },
   { id: "profissionais", label: "Profissionais & Disciplinas", icon: GraduationCap, group: "Gestão Institucional" },
+  { id: "disciplinas", label: "Disciplinas & Materiais", icon: BookOpen, group: "Gestão Institucional" },
 
   { id: "cortex", label: "Roteamento do Córtex", icon: Sparkles, group: "Orquestração de IA" },
   { id: "ia-oss", label: "Modelos Open Source", icon: Cpu, group: "Orquestração de IA" },
