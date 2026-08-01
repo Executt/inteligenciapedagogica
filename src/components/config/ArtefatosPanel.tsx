@@ -910,6 +910,26 @@ function DownloadDialog({
     if (t) { clearInterval(t); delete timers.current[name]; }
   }
 
+  /** Versões que a política de retenção permite baixar para o arquivo. */
+  function versoesPermitidas(f: RemoteFile): { value: string; label: string }[] {
+    const total = f.versoes ?? 1;
+    const nums = Array.from({ length: total }, (_, i) => total - i); // mais recente primeiro
+    if (policy === "keep-latest") {
+      return [{ value: `v${total}`, label: `v${total} (última)` }];
+    }
+    const permitidas = policy === "keep-n" ? nums.slice(0, keepN) : nums;
+    return [
+      { value: "todas", label: `Todas as permitidas (${permitidas.length})` },
+      ...permitidas.map((n) => ({ value: `v${n}`, label: n === total ? `v${n} (última)` : `v${n}` })),
+    ];
+  }
+
+  function versaoDe(f: RemoteFile): string {
+    const opts = versoesPermitidas(f);
+    const atual = versaoSel[f.nome];
+    return atual && opts.some((o) => o.value === atual) ? atual : opts[0]!.value;
+  }
+
   async function listar() {
     if (!target) return;
     setLoading(true);
