@@ -901,6 +901,7 @@ function DownloadDialog({
   const [loading, setLoading] = useState(false);
   const [policy, setPolicy] = useState<VersionPolicy>("keep-latest");
   const [keepN, setKeepN] = useState(3);
+  const [versaoSel, setVersaoSel] = useState<Record<string, string>>({});
   const [jobs, setJobs] = useState<Record<string, DownloadJob>>({});
   const timers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
 
