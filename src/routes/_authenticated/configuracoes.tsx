@@ -117,6 +117,7 @@ function ConfiguracoesPage() {
             {active === "auditoria" && <AuditPanel />}
             {active === "instituicao" && <InstituicaoPanel />}
             {active === "profissionais" && <ProfissionaisPanel />}
+            {active === "disciplinas" && <DisciplinasPanel />}
             {active === "cortex" && <CortexRoutingPanel />}
             {active === "ia-oss" && <ModelosIAPanel categoria="oss" />}
             {active === "ia-pagas" && <ModelosIAPanel categoria="paga" />}
