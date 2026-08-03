@@ -21,7 +21,7 @@ import { ComunicacaoPanel } from "@/components/config/ComunicacaoPanel";
 import { IntegracaoPulsePanel } from "@/components/config/IntegracaoPulsePanel";
 import {
   Users, ScrollText, BrainCircuit, Cpu, Database, Package, Sparkles, Mail, MessageSquare, Phone, BookOpen,
-  Building2, Bot, GraduationCap, Webhook,
+  Building2, Bot, GraduationCap, Webhook, School,
 } from "lucide-react";
 
 type TabDef = { id: string; label: string; icon: any; group: string };
@@ -30,6 +30,7 @@ const TABS: TabDef[] = [
   { id: "usuarios", label: "Usuários", icon: Users, group: "Administração" },
   { id: "auditoria", label: "Auditoria", icon: ScrollText, group: "Administração" },
 
+  { id: "rede", label: "Rede Escolar (Core)", icon: School, group: "Gestão Institucional" },
   { id: "instituicao", label: "Instituição Escolar", icon: Building2, group: "Gestão Institucional" },
   { id: "profissionais", label: "Profissionais & Disciplinas", icon: GraduationCap, group: "Gestão Institucional" },
   { id: "disciplinas", label: "Disciplinas & Materiais", icon: BookOpen, group: "Gestão Institucional" },
@@ -116,6 +117,7 @@ function ConfiguracoesPage() {
           <Card className="flex-1 p-6 min-w-0">
             {active === "usuarios" && <UsersPanel />}
             {active === "auditoria" && <AuditPanel />}
+            {active === "rede" && <RedeEscolarPanel />}
             {active === "instituicao" && <InstituicaoPanel />}
             {active === "profissionais" && <ProfissionaisPanel />}
             {active === "disciplinas" && <DisciplinasPanel />}
