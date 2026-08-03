@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      alunos: {
+        Row: {
+          codigo: string
+          created_at: string
+          data_nascimento: string | null
+          email_responsavel: string | null
+          id: string
+          metadados: Json
+          nome: string
+          responsavel: string | null
+          situacao: string
+          telefone_responsavel: string | null
+          updated_at: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          data_nascimento?: string | null
+          email_responsavel?: string | null
+          id?: string
+          metadados?: Json
+          nome: string
+          responsavel?: string | null
+          situacao?: string
+          telefone_responsavel?: string | null
+          updated_at?: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          data_nascimento?: string | null
+          email_responsavel?: string | null
+          id?: string
+          metadados?: Json
+          nome?: string
+          responsavel?: string | null
+          situacao?: string
+          telefone_responsavel?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           atualizado_por: string | null
@@ -229,9 +271,163 @@ export type Database = {
         }
         Relationships: []
       }
+      escolas: {
+        Row: {
+          bairro: string | null
+          cep: string | null
+          codigo: string
+          created_at: string
+          diretor: string | null
+          email: string | null
+          endereco: string | null
+          etapa_predominante: string
+          fonte_importacao: string | null
+          id: string
+          inep: string | null
+          metadados: Json
+          municipio: string
+          nome: string
+          situacao: string
+          telefone: string | null
+          tipo_unidade: string
+          uf: string
+          updated_at: string
+        }
+        Insert: {
+          bairro?: string | null
+          cep?: string | null
+          codigo: string
+          created_at?: string
+          diretor?: string | null
+          email?: string | null
+          endereco?: string | null
+          etapa_predominante?: string
+          fonte_importacao?: string | null
+          id?: string
+          inep?: string | null
+          metadados?: Json
+          municipio?: string
+          nome: string
+          situacao?: string
+          telefone?: string | null
+          tipo_unidade?: string
+          uf?: string
+          updated_at?: string
+        }
+        Update: {
+          bairro?: string | null
+          cep?: string | null
+          codigo?: string
+          created_at?: string
+          diretor?: string | null
+          email?: string | null
+          endereco?: string | null
+          etapa_predominante?: string
+          fonte_importacao?: string | null
+          id?: string
+          inep?: string | null
+          metadados?: Json
+          municipio?: string
+          nome?: string
+          situacao?: string
+          telefone?: string | null
+          tipo_unidade?: string
+          uf?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      importacao_inconsistencias: {
+        Row: {
+          created_at: string
+          entidade: string
+          id: string
+          motivo: string
+          origem: string
+          registro: Json
+          resolvido: boolean
+          resolvido_por: string | null
+          severidade: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entidade: string
+          id?: string
+          motivo: string
+          origem: string
+          registro?: Json
+          resolvido?: boolean
+          resolvido_por?: string | null
+          severidade?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entidade?: string
+          id?: string
+          motivo?: string
+          origem?: string
+          registro?: Json
+          resolvido?: boolean
+          resolvido_por?: string | null
+          severidade?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      matriculas: {
+        Row: {
+          aluno_id: string
+          created_at: string
+          data_matricula: string
+          id: string
+          numero: string | null
+          situacao: string
+          turma_id: string
+          updated_at: string
+        }
+        Insert: {
+          aluno_id: string
+          created_at?: string
+          data_matricula?: string
+          id?: string
+          numero?: string | null
+          situacao?: string
+          turma_id: string
+          updated_at?: string
+        }
+        Update: {
+          aluno_id?: string
+          created_at?: string
+          data_matricula?: string
+          id?: string
+          numero?: string | null
+          situacao?: string
+          turma_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matriculas_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matriculas_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "turmas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           ativo: boolean
+          auth_origin: string
           created_at: string
           id: string
           must_change_password: boolean
@@ -241,6 +437,7 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean
+          auth_origin?: string
           created_at?: string
           id: string
           must_change_password?: boolean
@@ -250,6 +447,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean
+          auth_origin?: string
           created_at?: string
           id?: string
           must_change_password?: boolean
@@ -322,6 +520,101 @@ export type Database = {
         }
         Relationships: []
       }
+      servidores: {
+        Row: {
+          cargo: string
+          created_at: string
+          email: string | null
+          id: string
+          matricula: string
+          metadados: Json
+          nome: string
+          situacao: string
+          telefone: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          cargo?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          matricula: string
+          metadados?: Json
+          nome: string
+          situacao?: string
+          telefone?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          cargo?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          matricula?: string
+          metadados?: Json
+          nome?: string
+          situacao?: string
+          telefone?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      turmas: {
+        Row: {
+          ano_letivo: number
+          ano_serie: string | null
+          capacidade: number | null
+          codigo: string | null
+          created_at: string
+          escola_id: string
+          etapa: string
+          id: string
+          nome: string
+          situacao: string
+          turno: string
+          updated_at: string
+        }
+        Insert: {
+          ano_letivo?: number
+          ano_serie?: string | null
+          capacidade?: number | null
+          codigo?: string | null
+          created_at?: string
+          escola_id: string
+          etapa?: string
+          id?: string
+          nome: string
+          situacao?: string
+          turno?: string
+          updated_at?: string
+        }
+        Update: {
+          ano_letivo?: number
+          ano_serie?: string | null
+          capacidade?: number | null
+          codigo?: string | null
+          created_at?: string
+          escola_id?: string
+          etapa?: string
+          id?: string
+          nome?: string
+          situacao?: string
+          turno?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turmas_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -342,6 +635,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      vinculos_servidor: {
+        Row: {
+          carga_horaria: number | null
+          created_at: string
+          disciplina_codigo: string | null
+          escola_id: string
+          id: string
+          servidor_id: string
+          situacao: string
+          updated_at: string
+        }
+        Insert: {
+          carga_horaria?: number | null
+          created_at?: string
+          disciplina_codigo?: string | null
+          escola_id: string
+          id?: string
+          servidor_id: string
+          situacao?: string
+          updated_at?: string
+        }
+        Update: {
+          carga_horaria?: number | null
+          created_at?: string
+          disciplina_codigo?: string | null
+          escola_id?: string
+          id?: string
+          servidor_id?: string
+          situacao?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vinculos_servidor_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vinculos_servidor_servidor_id_fkey"
+            columns: ["servidor_id"]
+            isOneToOne: false
+            referencedRelation: "servidores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
