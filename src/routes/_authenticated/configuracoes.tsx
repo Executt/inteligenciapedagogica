@@ -18,10 +18,11 @@ import { RedeEscolarPanel } from "@/components/config/RedeEscolarPanel";
 import { ProfissionaisPanel } from "@/components/config/ProfissionaisPanel";
 import { DisciplinasPanel } from "@/components/config/DisciplinasPanel";
 import { ComunicacaoPanel } from "@/components/config/ComunicacaoPanel";
+import { IntegrationHubPanel } from "@/components/config/IntegrationHubPanel";
 import { IntegracaoPulsePanel } from "@/components/config/IntegracaoPulsePanel";
 import {
   Users, ScrollText, BrainCircuit, Cpu, Database, Package, Sparkles, Mail, MessageSquare, Phone, BookOpen,
-  Building2, Bot, GraduationCap, Webhook, School,
+  Building2, Bot, GraduationCap, Webhook, School, Plug,
 } from "lucide-react";
 
 type TabDef = { id: string; label: string; icon: any; group: string };
@@ -43,6 +44,7 @@ const TABS: TabDef[] = [
 
   { id: "banco", label: "Banco de Dados", icon: Database, group: "Infraestrutura" },
   { id: "artefatos", label: "Repositórios & Artefatos", icon: Package, group: "Infraestrutura" },
+  { id: "hub", label: "Integration Hub", icon: Plug, group: "Infraestrutura" },
   { id: "pulse", label: "Integração Pulse", icon: Webhook, group: "Infraestrutura" },
 
   { id: "smtp", label: "SMTP", icon: Mail, group: "Comunicação" },
@@ -127,6 +129,7 @@ function ConfiguracoesPage() {
             {active === "assistente" && <AssistentePanel />}
             {active === "banco" && <BancoDadosPanel />}
             {active === "artefatos" && <ArtefatosPanel />}
+            {active === "hub" && <IntegrationHubPanel />}
             {active === "pulse" && <IntegracaoPulsePanel />}
             {active === "smtp" && <ComunicacaoPanel canal="smtp" />}
             {active === "sms" && <ComunicacaoPanel canal="sms" />}
