@@ -104,7 +104,7 @@ export const testConnector = createServerFn({ method: "POST" })
     const inicio = Date.now();
     let status: "sucesso" | "erro" | "aviso" = "sucesso";
     let mensagem = "";
-    const detalhes: Record<string, unknown> = { adaptador: conn.adaptador, execucao: def?.execucao };
+    const detalhes: Record<string, string | number> = { adaptador: String(conn.adaptador), execucao: String(def?.execucao ?? "") };
 
     try {
       if (def?.familia === "api") {
