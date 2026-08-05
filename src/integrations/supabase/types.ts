@@ -337,6 +337,251 @@ export type Database = {
         }
         Relationships: []
       }
+      hub_connector_logs: {
+        Row: {
+          actor_id: string | null
+          connector_id: string
+          created_at: string
+          detalhes: Json
+          duracao_ms: number | null
+          id: string
+          mensagem: string | null
+          operacao: string
+          status: string
+        }
+        Insert: {
+          actor_id?: string | null
+          connector_id: string
+          created_at?: string
+          detalhes?: Json
+          duracao_ms?: number | null
+          id?: string
+          mensagem?: string | null
+          operacao: string
+          status: string
+        }
+        Update: {
+          actor_id?: string | null
+          connector_id?: string
+          created_at?: string
+          detalhes?: Json
+          duracao_ms?: number | null
+          id?: string
+          mensagem?: string | null
+          operacao?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_connector_logs_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "hub_connectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_connectors: {
+        Row: {
+          adaptador: string
+          auth_config: Json
+          auth_tipo: string
+          base_url: string | null
+          camada: string
+          created_at: string
+          criado_por: string | null
+          descricao: string | null
+          direcao: string
+          eventos_publicados: string[]
+          id: string
+          nome: string
+          parametros: Json
+          situacao: string
+          slug: string
+          ultimo_teste_em: string | null
+          ultimo_teste_mensagem: string | null
+          ultimo_teste_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          adaptador: string
+          auth_config?: Json
+          auth_tipo?: string
+          base_url?: string | null
+          camada?: string
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string | null
+          direcao?: string
+          eventos_publicados?: string[]
+          id?: string
+          nome: string
+          parametros?: Json
+          situacao?: string
+          slug: string
+          ultimo_teste_em?: string | null
+          ultimo_teste_mensagem?: string | null
+          ultimo_teste_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          adaptador?: string
+          auth_config?: Json
+          auth_tipo?: string
+          base_url?: string | null
+          camada?: string
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string | null
+          direcao?: string
+          eventos_publicados?: string[]
+          id?: string
+          nome?: string
+          parametros?: Json
+          situacao?: string
+          slug?: string
+          ultimo_teste_em?: string | null
+          ultimo_teste_mensagem?: string | null
+          ultimo_teste_status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hub_event_deliveries: {
+        Row: {
+          consumidor: string
+          created_at: string
+          duracao_ms: number | null
+          event_id: string
+          id: string
+          mensagem: string | null
+          status: string
+        }
+        Insert: {
+          consumidor: string
+          created_at?: string
+          duracao_ms?: number | null
+          event_id: string
+          id?: string
+          mensagem?: string | null
+          status: string
+        }
+        Update: {
+          consumidor?: string
+          created_at?: string
+          duracao_ms?: number | null
+          event_id?: string
+          id?: string
+          mensagem?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_event_deliveries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "hub_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_event_subscriptions: {
+        Row: {
+          ativo: boolean
+          connector_id: string | null
+          consumidor: string
+          created_at: string
+          evento: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          connector_id?: string | null
+          consumidor: string
+          created_at?: string
+          evento: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          connector_id?: string | null
+          consumidor?: string
+          created_at?: string
+          evento?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_event_subscriptions_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "hub_connectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_events: {
+        Row: {
+          agregado: string
+          agregado_id: string | null
+          connector_id: string | null
+          correlacao_id: string | null
+          created_at: string
+          erro: string | null
+          id: string
+          nome: string
+          origem: string
+          payload: Json
+          processado_em: string | null
+          publicado_por: string | null
+          status: string
+          tentativas: number
+        }
+        Insert: {
+          agregado: string
+          agregado_id?: string | null
+          connector_id?: string | null
+          correlacao_id?: string | null
+          created_at?: string
+          erro?: string | null
+          id?: string
+          nome: string
+          origem?: string
+          payload?: Json
+          processado_em?: string | null
+          publicado_por?: string | null
+          status?: string
+          tentativas?: number
+        }
+        Update: {
+          agregado?: string
+          agregado_id?: string | null
+          connector_id?: string | null
+          correlacao_id?: string | null
+          created_at?: string
+          erro?: string | null
+          id?: string
+          nome?: string
+          origem?: string
+          payload?: Json
+          processado_em?: string | null
+          publicado_por?: string | null
+          status?: string
+          tentativas?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_events_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "hub_connectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       importacao_inconsistencias: {
         Row: {
           created_at: string
