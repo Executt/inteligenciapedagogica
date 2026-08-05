@@ -147,7 +147,7 @@ function ConectoresTab() {
                   <div className="font-medium">{c.nome}</div>
                   <div className="text-xs text-muted-foreground font-mono">{c.slug}</div>
                 </TableCell>
-                <TableCell className="text-sm">{ADAPTER_BY_TYPE[c.adaptador]?.rotulo ?? c.adaptador}</TableCell>
+                <TableCell className="text-sm">{ADAPTER_BY_TYPE[c.adaptador as keyof typeof ADAPTER_BY_TYPE]?.rotulo ?? c.adaptador}</TableCell>
                 <TableCell className="text-sm capitalize">{c.direcao}</TableCell>
                 <TableCell className="text-sm">{AUTH_TIPOS.find((a) => a.id === c.auth_tipo)?.rotulo}</TableCell>
                 <TableCell><StatusBadge value={c.situacao} /></TableCell>
@@ -182,7 +182,7 @@ function ConnectorDialog({
   form, setForm, onSave, saving,
 }: { form: Conn | null; setForm: (c: Conn | null) => void; onSave: (c: Conn) => void; saving: boolean }) {
   if (!form) return null;
-  const def = ADAPTER_BY_TYPE[form.adaptador];
+  const def = ADAPTER_BY_TYPE[form.adaptador as keyof typeof ADAPTER_BY_TYPE];
   const set = (patch: Partial<Conn>) => setForm({ ...form, ...patch });
   const setParam = (k: string, v: string) => set({ parametros: { ...(form.parametros ?? {}), [k]: v } });
   const setAuth = (k: string, v: string) => set({ auth_config: { ...(form.auth_config ?? {}), [k]: v } });
@@ -279,7 +279,7 @@ function ConnectorDialog({
             <div className="rounded-md border p-3 space-y-3">
               <div className="text-sm font-medium">Parâmetros do adaptador</div>
               <div className="grid grid-cols-2 gap-3">
-                {def.campos.map((c) => (
+                {def.campos.map((c: { id: string; rotulo: string; placeholder?: string; obrigatorio?: boolean }) => (
                   <div key={c.id}>
                     <Label>{c.rotulo}{c.obrigatorio && " *"}</Label>
                     <Input value={(form.parametros ?? {})[c.id] ?? ""} placeholder={c.placeholder}
@@ -379,7 +379,7 @@ function BarramentoTab() {
   const [novoConsumidor, setNovoConsumidor] = useState<string>(CONSUMIDORES[0]);
   const [novoEvento, setNovoEvento] = useState<string>(EVENT_CATALOG[0].nome);
 
-  const { data: eventos = [] } = useQuery({ queryKey: ["hub", "events"], queryFn: () => eventsFn({}) });
+  const { data: eventos = [] } = useQuery({ queryKey: ["hub", "events"], queryFn: () => eventsFn({ data: {} }) });
   const { data: subs = [] } = useQuery({ queryKey: ["hub", "subs"], queryFn: () => subsFn({}) });
 
   const publicar = useMutation({
@@ -523,7 +523,7 @@ function LogsTab() {
   const [filtro, setFiltro] = useState("todos");
 
   const { data: conectores = [] } = useQuery({ queryKey: ["hub", "connectors"], queryFn: () => list({}) });
-  const { data: logs = [] } = useQuery({ queryKey: ["hub", "logs"], queryFn: () => logsFn({}) });
+  const { data: logs = [] } = useQuery({ queryKey: ["hub", "logs"], queryFn: () => logsFn({ data: {} }) });
 
   const nomePorId = useMemo(
     () => Object.fromEntries((conectores as any[]).map((c) => [c.id, c.nome])),
