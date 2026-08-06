@@ -21,7 +21,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plug, Plus, Play, Trash2, Pencil, RefreshCw, Radio, ScrollText, Send } from "lucide-react";
+import { Plug, Plus, Play, Trash2, Pencil, RefreshCw, Radio, Send } from "lucide-react";
+import { SyncTab } from "@/components/config/hub/SyncTab";
+import { MappingsTab } from "@/components/config/hub/MappingsTab";
+import { BusMonitor } from "@/components/config/hub/BusMonitor";
+import { LogsTab } from "@/components/config/hub/LogsTab";
 
 type Conn = any;
 
@@ -58,12 +62,16 @@ export function IntegrationHubPanel() {
         <TabsList>
           <TabsTrigger value="conectores">Conectores</TabsTrigger>
           <TabsTrigger value="adaptadores">Adaptadores</TabsTrigger>
+          <TabsTrigger value="sincronizacoes">Sincronizações</TabsTrigger>
+          <TabsTrigger value="mapeamentos">Mapeamentos</TabsTrigger>
           <TabsTrigger value="barramento">Barramento de eventos</TabsTrigger>
           <TabsTrigger value="logs">Logs & histórico</TabsTrigger>
         </TabsList>
 
         <TabsContent value="conectores" className="pt-4"><ConectoresTab /></TabsContent>
         <TabsContent value="adaptadores" className="pt-4"><AdaptadoresTab /></TabsContent>
+        <TabsContent value="sincronizacoes" className="pt-4"><SyncTab /></TabsContent>
+        <TabsContent value="mapeamentos" className="pt-4"><MappingsTab /></TabsContent>
         <TabsContent value="barramento" className="pt-4"><BarramentoTab /></TabsContent>
         <TabsContent value="logs" className="pt-4"><LogsTab /></TabsContent>
       </Tabs>
@@ -412,6 +420,8 @@ function BarramentoTab() {
         </p>
       </Card>
 
+      <BusMonitor />
+
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-4 space-y-3">
           <div className="text-sm font-semibold">Produzir evento</div>
@@ -507,68 +517,6 @@ function BarramentoTab() {
             ))}
             {(eventos as any[]).length === 0 && (
               <TableRow><TableCell colSpan={6} className="text-muted-foreground">Nenhum evento no barramento.</TableCell></TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
-    </div>
-  );
-}
-
-/* --------------------------------- Logs ---------------------------------- */
-
-function LogsTab() {
-  const logsFn = useServerFn(listConnectorLogs);
-  const list = useServerFn(listConnectors);
-  const [filtro, setFiltro] = useState("todos");
-
-  const { data: conectores = [] } = useQuery({ queryKey: ["hub", "connectors"], queryFn: () => list({}) });
-  const { data: logs = [] } = useQuery({ queryKey: ["hub", "logs"], queryFn: () => logsFn({ data: {} }) });
-
-  const nomePorId = useMemo(
-    () => Object.fromEntries((conectores as any[]).map((c) => [c.id, c.nome])),
-    [conectores],
-  );
-  const filtrados = (logs as any[]).filter((l) => filtro === "todos" || l.connector_id === filtro);
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <ScrollText className="h-4 w-4 text-muted-foreground" />
-        <Select value={filtro} onValueChange={setFiltro}>
-          <SelectTrigger className="w-72"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os conectores</SelectItem>
-            {(conectores as any[]).map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Card className="overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Conector</TableHead>
-              <TableHead>Operação</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Duração</TableHead>
-              <TableHead>Mensagem</TableHead>
-              <TableHead>Data</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtrados.map((l) => (
-              <TableRow key={l.id}>
-                <TableCell className="text-sm">{nomePorId[l.connector_id] ?? "—"}</TableCell>
-                <TableCell className="text-sm">{l.operacao}</TableCell>
-                <TableCell><StatusBadge value={l.status} /></TableCell>
-                <TableCell className="text-sm">{l.duracao_ms ?? "—"} ms</TableCell>
-                <TableCell className="text-xs max-w-[340px] truncate">{l.mensagem}</TableCell>
-                <TableCell className="text-xs text-muted-foreground">{new Date(l.created_at).toLocaleString("pt-BR")}</TableCell>
-              </TableRow>
-            ))}
-            {filtrados.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="text-muted-foreground">Nenhum log registrado.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
