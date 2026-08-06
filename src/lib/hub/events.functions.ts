@@ -160,3 +160,101 @@ export const removeSubscription = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* --------------------- Monitoramento do consumo do barramento --------------------- */
+
+/** Indicadores de consumo por assinatura: entregas, falhas, backlog e atraso do mais antigo pendente. */
+export const busMetrics = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context as any);
+
+    const [{ data: eventos }, { data: subs }, { data: entregas }] = await Promise.all([
+      context.supabase.from("hub_events").select("id, nome, status, created_at, processado_em").order("created_at", { ascending: false }).limit(1000),
+      context.supabase.from("hub_event_subscriptions").select("id, consumidor, evento, ativo"),
+      context.supabase.from("hub_event_deliveries").select("id, event_id, consumidor, status, duracao_ms, created_at").order("created_at", { ascending: false }).limit(1000),
+    ]);
+
+    const evs = eventos ?? [];
+    const dels = entregas ?? [];
+    const agora = Date.now();
+
+    const porStatus = evs.reduce<Record<string, number>>((acc, e: any) => {
+      acc[e.status] = (acc[e.status] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    const pendentes = evs.filter((e: any) => e.status === "pendente");
+    const maisAntigo = pendentes.reduce<number | null>((acc, e: any) => {
+      const t = new Date(e.created_at).getTime();
+      return acc === null || t < acc ? t : acc;
+    }, null);
+
+    const latencias = evs
+      .filter((e: any) => e.processado_em)
+      .map((e: any) => new Date(e.processado_em).getTime() - new Date(e.created_at).getTime());
+    const latenciaMedia = latencias.length ? Math.round(latencias.reduce((a, b) => a + b, 0) / latencias.length) : 0;
+
+    const porAssinatura = (subs ?? []).map((s: any) => {
+      const desse = dels.filter((d: any) => d.consumidor === s.consumidor);
+      const evsDoNome = evs.filter((e: any) => e.nome === s.evento);
+      const backlog = evsDoNome.filter((e: any) => e.status === "pendente").length;
+      const idsDoNome = new Set(evsDoNome.map((e: any) => e.id));
+      const entregasEvento = desse.filter((d: any) => idsDoNome.has(d.event_id));
+      const ultima = entregasEvento[0];
+      return {
+        ...s,
+        backlog,
+        entregas: entregasEvento.length,
+        falhas: entregasEvento.filter((d: any) => d.status === "erro").length,
+        duracao_media_ms: entregasEvento.length
+          ? Math.round(entregasEvento.reduce((a: number, d: any) => a + (d.duracao_ms ?? 0), 0) / entregasEvento.length)
+          : 0,
+        ultimo_consumo: ultima?.created_at ?? null,
+        atraso_min: ultima ? Math.round((agora - new Date(ultima.created_at).getTime()) / 60000) : null,
+      };
+    });
+
+    return {
+      porStatus,
+      total: evs.length,
+      pendentes: pendentes.length,
+      atraso_maximo_min: maisAntigo ? Math.round((agora - maisAntigo) / 60000) : 0,
+      latencia_media_ms: latenciaMedia,
+      entregas_total: dels.length,
+      entregas_erro: dels.filter((d: any) => d.status === "erro").length,
+      porAssinatura,
+    };
+  });
+
+/** Retomada: devolve à fila eventos descartados/com erro que hoje possuem consumidor assinante. */
+export const resumeStalledEvents = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context as any);
+
+    const { data: subs } = await context.supabase
+      .from("hub_event_subscriptions")
+      .select("evento")
+      .eq("ativo", true);
+    const assinados = [...new Set((subs ?? []).map((s: any) => s.evento))];
+    if (!assinados.length) return { retomados: 0 };
+
+    const { data: parados, error } = await context.supabase
+      .from("hub_events")
+      .select("id")
+      .in("status", ["descartado", "erro"])
+      .in("nome", assinados)
+      .limit(200);
+    if (error) throw new Error(error.message);
+    if (!(parados ?? []).length) return { retomados: 0 };
+
+    const ids = (parados ?? []).map((e: any) => e.id);
+    const { error: upErr } = await context.supabase
+      .from("hub_events")
+      .update({ status: "pendente", erro: null, processado_em: null })
+      .in("id", ids);
+    if (upErr) throw new Error(upErr.message);
+
+    return { retomados: ids.length };
+  });
