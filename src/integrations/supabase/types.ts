@@ -582,6 +582,209 @@ export type Database = {
           },
         ]
       }
+      hub_field_mappings: {
+        Row: {
+          agregado: string
+          campo_destino: string
+          campo_origem: string
+          chave_deduplicacao: boolean
+          connector_id: string
+          created_at: string
+          id: string
+          obrigatorio: boolean
+          ordem: number
+          transformacao: string
+          updated_at: string
+          validacao: string | null
+          valor_padrao: string | null
+        }
+        Insert: {
+          agregado?: string
+          campo_destino: string
+          campo_origem: string
+          chave_deduplicacao?: boolean
+          connector_id: string
+          created_at?: string
+          id?: string
+          obrigatorio?: boolean
+          ordem?: number
+          transformacao?: string
+          updated_at?: string
+          validacao?: string | null
+          valor_padrao?: string | null
+        }
+        Update: {
+          agregado?: string
+          campo_destino?: string
+          campo_origem?: string
+          chave_deduplicacao?: boolean
+          connector_id?: string
+          created_at?: string
+          id?: string
+          obrigatorio?: boolean
+          ordem?: number
+          transformacao?: string
+          updated_at?: string
+          validacao?: string | null
+          valor_padrao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_field_mappings_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "hub_connectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_sync_jobs: {
+        Row: {
+          agregado: string
+          ativo: boolean
+          connector_id: string
+          created_at: string
+          criado_por: string | null
+          frequencia_min: number
+          id: string
+          limite_registros: number
+          nome: string
+          proxima_execucao: string | null
+          ultima_execucao: string | null
+          ultima_mensagem: string | null
+          ultimo_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          agregado?: string
+          ativo?: boolean
+          connector_id: string
+          created_at?: string
+          criado_por?: string | null
+          frequencia_min?: number
+          id?: string
+          limite_registros?: number
+          nome: string
+          proxima_execucao?: string | null
+          ultima_execucao?: string | null
+          ultima_mensagem?: string | null
+          ultimo_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agregado?: string
+          ativo?: boolean
+          connector_id?: string
+          created_at?: string
+          criado_por?: string | null
+          frequencia_min?: number
+          id?: string
+          limite_registros?: number
+          nome?: string
+          proxima_execucao?: string | null
+          ultima_execucao?: string | null
+          ultima_mensagem?: string | null
+          ultimo_status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_sync_jobs_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "hub_connectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_sync_runs: {
+        Row: {
+          actor_id: string | null
+          categoria_erro: string | null
+          connector_id: string
+          created_at: string
+          detalhes: Json
+          duracao_ms: number | null
+          eventos_publicados: number
+          finalizado_em: string | null
+          gatilho: string
+          id: string
+          iniciado_em: string
+          job_id: string | null
+          mensagem: string | null
+          registros_duplicados: number
+          registros_lidos: number
+          registros_rejeitados: number
+          registros_validos: number
+          reprocessa_run_id: string | null
+          status: string
+        }
+        Insert: {
+          actor_id?: string | null
+          categoria_erro?: string | null
+          connector_id: string
+          created_at?: string
+          detalhes?: Json
+          duracao_ms?: number | null
+          eventos_publicados?: number
+          finalizado_em?: string | null
+          gatilho?: string
+          id?: string
+          iniciado_em?: string
+          job_id?: string | null
+          mensagem?: string | null
+          registros_duplicados?: number
+          registros_lidos?: number
+          registros_rejeitados?: number
+          registros_validos?: number
+          reprocessa_run_id?: string | null
+          status?: string
+        }
+        Update: {
+          actor_id?: string | null
+          categoria_erro?: string | null
+          connector_id?: string
+          created_at?: string
+          detalhes?: Json
+          duracao_ms?: number | null
+          eventos_publicados?: number
+          finalizado_em?: string | null
+          gatilho?: string
+          id?: string
+          iniciado_em?: string
+          job_id?: string | null
+          mensagem?: string | null
+          registros_duplicados?: number
+          registros_lidos?: number
+          registros_rejeitados?: number
+          registros_validos?: number
+          reprocessa_run_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_sync_runs_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "hub_connectors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_sync_runs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "hub_sync_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_sync_runs_reprocessa_run_id_fkey"
+            columns: ["reprocessa_run_id"]
+            isOneToOne: false
+            referencedRelation: "hub_sync_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       importacao_inconsistencias: {
         Row: {
           created_at: string
