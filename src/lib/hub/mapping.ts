@@ -110,9 +110,11 @@ export function applyTransform(value: unknown, transform: string): unknown {
   }
 }
 
+export type MappedValue = string | number | boolean | null;
+
 export type MappedRow = {
   indice: number;
-  registro: Record<string, unknown>;
+  registro: Record<string, MappedValue>;
   chave: string;
   erros: string[];
   duplicado: boolean;
@@ -138,7 +140,7 @@ export function applyMappings(
   const linhas: MappedRow[] = [];
 
   rows.forEach((row, indice) => {
-    const registro: Record<string, unknown> = {};
+    const registro: Record<string, MappedValue> = {};
     const erros: string[] = [];
 
     for (const m of mappings) {
@@ -161,7 +163,7 @@ export function applyMappings(
           errosPorCampo[m.campo_destino] = (errosPorCampo[m.campo_destino] ?? 0) + 1;
         }
       }
-      registro[m.campo_destino] = valor ?? null;
+      registro[m.campo_destino] = (valor ?? null) as MappedValue;
     }
 
     const chave = (dedupe.length ? dedupe : Object.keys(registro).slice(0, 1))

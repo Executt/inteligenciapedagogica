@@ -146,7 +146,7 @@ export const runSyncJob = createServerFn({ method: "POST" })
             origem: "integration-hub",
             connector_id: conn.id,
             correlacao_id: correlacao,
-            payload: l.registro,
+            payload: l.registro as any,
             publicado_por: context.userId,
           })),
         );
