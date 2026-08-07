@@ -4,6 +4,7 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/states";
 import { fetchTurmas } from "@/lib/api";
 
 export const Route = createFileRoute("/turmas")({ component: TurmasList });
