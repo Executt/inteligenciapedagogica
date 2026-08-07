@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -42,9 +42,24 @@ export function AppShell({ children }: { children: ReactNode }) {
   const profileFn = useServerFn(getMyProfile);
   const logEvent = useServerFn(logAuditEvent);
 
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (alive) setHasSession(!!data.session);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setHasSession(!!session));
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
   const { data: profile } = useQuery({
     queryKey: ["me", "profile"],
     queryFn: () => profileFn({}),
+    enabled: hasSession,
+    retry: false,
     staleTime: 60_000,
   });
 
