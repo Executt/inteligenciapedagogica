@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gridProps, axisProps, tooltipProps, legendProps, polarGridProps, polarTickProps } from "@/lib/chart-theme";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -86,11 +87,11 @@ function Overview() {
                         <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                    <XAxis dataKey="mes" stroke="var(--color-muted-foreground)" fontSize={12} />
-                    <YAxis stroke="var(--color-muted-foreground)" fontSize={12} />
-                    <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                    <CartesianGrid {...gridProps} />
+                    <XAxis dataKey="mes" {...axisProps} />
+                    <YAxis {...axisProps} />
+                    <Tooltip {...tooltipProps} />
+                    <Legend {...legendProps} />
                     <Area type="monotone" dataKey="media" stroke="var(--color-primary)" fill="url(#g1)" name="Média Geral" strokeWidth={2} />
                     <Line type="monotone" dataKey="frequencia" stroke="var(--color-chart-3)" name="Frequência %" strokeWidth={2} dot={false} />
                   </AreaChart>
@@ -132,11 +133,11 @@ function Overview() {
             {dash.isLoading ? <Skeleton className="h-[280px]" /> : (
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={dash.data!.desempenhoTurmas}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                  <XAxis dataKey="turma" stroke="var(--color-muted-foreground)" fontSize={12} />
-                  <YAxis stroke="var(--color-muted-foreground)" fontSize={12} />
-                  <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <CartesianGrid {...gridProps} />
+                  <XAxis dataKey="turma" {...axisProps} />
+                  <YAxis {...axisProps} />
+                  <Tooltip {...tooltipProps} />
+                  <Legend {...legendProps} />
                   <Bar dataKey="media" fill="var(--color-primary)" name="Média" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="frequencia" fill="var(--color-chart-3)" name="Frequência %" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="aprovacao" fill="var(--color-chart-2)" name="Aprovação %" radius={[4, 4, 0, 0]} />

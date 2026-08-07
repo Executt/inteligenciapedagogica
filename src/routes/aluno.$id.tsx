@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gridProps, axisProps, tooltipProps, legendProps, polarGridProps, polarTickProps } from "@/lib/chart-theme";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,11 +79,11 @@ function AlunoView() {
                 <CardContent>
                   <ResponsiveContainer width="100%" height={280}>
                     <LineChart data={data.timeline}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                      <XAxis dataKey="bimestre" stroke="var(--color-muted-foreground)" fontSize={12} />
-                      <YAxis domain={[0, 10]} stroke="var(--color-muted-foreground)" fontSize={12} />
-                      <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <CartesianGrid {...gridProps} />
+                      <XAxis dataKey="bimestre" {...axisProps} />
+                      <YAxis domain={[0, 10]} {...axisProps} />
+                      <Tooltip {...tooltipProps} />
+                      <Legend {...legendProps} />
                       <Line type="monotone" dataKey="Português" stroke="var(--color-chart-1)" strokeWidth={2} />
                       <Line type="monotone" dataKey="Matemática" stroke="var(--color-chart-2)" strokeWidth={2} />
                       <Line type="monotone" dataKey="Ciências" stroke="var(--color-chart-3)" strokeWidth={2} />
@@ -96,11 +97,11 @@ function AlunoView() {
                 <CardContent>
                   <ResponsiveContainer width="100%" height={280}>
                     <RadarChart data={data.socioemocional}>
-                      <PolarGrid stroke="var(--color-border)" />
-                      <PolarAngleAxis dataKey="competencia" tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }} />
+                      <PolarGrid {...polarGridProps} />
+                      <PolarAngleAxis dataKey="competencia" tick={polarTickProps} />
                       <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} />
                       <Radar name="Nível" dataKey="nivel" stroke="var(--color-primary)" fill="var(--color-primary)" fillOpacity={0.35} />
-                      <Tooltip contentStyle={{ background: "var(--color-card)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
+                      <Tooltip {...tooltipProps} />
                     </RadarChart>
                   </ResponsiveContainer>
                   <p className="text-[11px] text-muted-foreground mt-2">Extraído por NLP de 24 relatos docentes e 3 observações pedagógicas.</p>
