@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { gridProps, axisProps, tooltipProps, legendProps, polarGridProps, polarTickProps } from "@/lib/chart-theme";
+import { gridProps, axisProps, tooltipProps, legendProps } from "@/lib/chart-theme";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
