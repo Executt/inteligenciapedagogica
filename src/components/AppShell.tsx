@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyProfile } from "@/lib/admin/profile.functions";
 import { logAuditEvent } from "@/lib/admin/audit.functions";
-import { Button } from "@/components/ui/button";
 
 const nav = [
   { to: "/", label: "Visão Geral", icon: LayoutDashboard },
