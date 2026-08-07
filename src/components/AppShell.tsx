@@ -60,12 +60,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col w-full bg-background">
+    <div className="min-h-dvh flex flex-col w-full bg-background">
+      <a
+        href="#conteudo-principal"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-sm focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:text-primary-foreground"
+      >
+        Ir para o conteúdo principal
+      </a>
       {/* Shell bar (HUB-GOV / Fiori launchpad header) */}
       <header className="h-12 shrink-0 bg-shell text-shell-foreground border-b border-shell-border px-4 flex items-center gap-4">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="h-7 w-7 rounded-sm bg-shell-accent flex items-center justify-center">
-            <GraduationCap className="h-4 w-4" />
+            <GraduationCap className="h-4 w-4" aria-hidden="true" />
           </div>
           <div className="min-w-0">
             <div className="text-sm font-semibold tracking-tight truncate">Edu-Gov</div>
@@ -76,20 +82,32 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="relative flex-1 max-w-md mx-auto">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-shell-foreground/70" />
+          <label htmlFor="shell-busca" className="sr-only">
+            Buscar aluno, turma, escola ou código INEP
+          </label>
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-shell-foreground/80"
+            aria-hidden="true"
+          />
           <input
+            id="shell-busca"
+            type="search"
             placeholder="Buscar aluno, turma, escola, INEP..."
-            className="w-full h-8 pl-9 pr-3 rounded-sm border border-shell-border bg-shell-accent/60 text-sm text-shell-foreground placeholder:text-shell-foreground/60 outline-none focus:ring-2 focus:ring-ring/60"
+            className="w-full h-8 pl-9 pr-3 rounded-sm border border-shell-border bg-shell-accent/60 text-sm text-shell-foreground placeholder:text-shell-foreground/70 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-shell"
           />
         </div>
 
         <div className="flex items-center gap-1">
-          <button className="relative h-8 w-8 rounded-sm hover:bg-shell-accent flex items-center justify-center">
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-1 right-1.5 h-1.5 w-1.5 rounded-full bg-destructive" />
+          <button
+            type="button"
+            aria-label="Notificações (há novas notificações)"
+            className="relative h-8 w-8 rounded-sm hover:bg-shell-accent flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-shell"
+          >
+            <Bell className="h-4 w-4" aria-hidden="true" />
+            <span className="absolute top-1 right-1.5 h-1.5 w-1.5 rounded-full bg-destructive" aria-hidden="true" />
           </button>
           <div className="flex items-center gap-2 pl-2 ml-1 border-l border-shell-border">
-            <div className="h-7 w-7 rounded-full bg-shell-accent text-[11px] font-semibold flex items-center justify-center">
+            <div aria-hidden="true" className="h-7 w-7 rounded-full bg-shell-accent text-[11px] font-semibold flex items-center justify-center">
               {initialsFrom(profile?.nome, null)}
             </div>
             <div className="hidden sm:block text-xs leading-tight">
@@ -97,11 +115,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="text-shell-foreground/70">{roleLabel}</div>
             </div>
             <button
+              type="button"
               onClick={handleSignOut}
+              aria-label="Sair da plataforma"
               title="Sair"
-              className="h-8 w-8 rounded-sm hover:bg-shell-accent flex items-center justify-center"
+              className="h-8 w-8 rounded-sm hover:bg-shell-accent flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-shell"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -109,7 +129,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex-1 flex min-h-0 w-full">
         <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
-          <nav className="flex-1 p-2 space-y-0.5 overflow-auto">
+          <nav aria-label="Navegação principal" className="flex-1 p-2 space-y-0.5 overflow-auto">
             {nav.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               const Icon = item.icon;
@@ -117,14 +137,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Link
                   key={item.to}
                   to={item.to}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-sm text-sm transition-colors border-l-2",
+                    "flex items-center gap-3 px-3 py-2 rounded-sm text-sm transition-colors border-l-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
                     active
                       ? "bg-sidebar-primary text-sidebar-primary-foreground border-primary font-medium"
                       : "border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4" aria-hidden="true" />
                   <span>{item.label}</span>
                 </Link>
               );
@@ -132,14 +153,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             {isAdmin && (
               <Link
                 to="/configuracoes"
+                aria-current={pathname.startsWith("/configuracoes") ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-sm text-sm transition-colors border-l-2",
+                  "flex items-center gap-3 px-3 py-2 rounded-sm text-sm transition-colors border-l-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
                   pathname.startsWith("/configuracoes")
                     ? "bg-sidebar-primary text-sidebar-primary-foreground border-primary font-medium"
                     : "border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 )}
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-4 w-4" aria-hidden="true" />
                 <span>Configurações</span>
               </Link>
             )}
@@ -149,7 +171,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        <main className="flex-1 overflow-auto min-w-0">{children}</main>
+        <main id="conteudo-principal" className="flex-1 overflow-auto min-w-0">
+          {children}
+        </main>
       </div>
     </div>
   );
