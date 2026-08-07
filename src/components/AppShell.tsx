@@ -61,88 +61,101 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
-      <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
-        <div className="h-16 px-5 flex items-center gap-2.5 border-b border-sidebar-border">
-          <div className="h-9 w-9 rounded-md bg-sidebar-primary flex items-center justify-center">
-            <GraduationCap className="h-5 w-5 text-sidebar-primary-foreground" />
+    <div className="min-h-screen flex flex-col w-full bg-background">
+      {/* Shell bar (HUB-GOV / Fiori launchpad header) */}
+      <header className="h-12 shrink-0 bg-shell text-shell-foreground border-b border-shell-border px-4 flex items-center gap-4">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="h-7 w-7 rounded-sm bg-shell-accent flex items-center justify-center">
+            <GraduationCap className="h-4 w-4" />
           </div>
-          <div>
-            <div className="text-sm font-semibold tracking-tight">Edu-Gov</div>
-            <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">Inteligência Pedagógica</div>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold tracking-tight truncate">Edu-Gov</div>
           </div>
+          <span className="hidden md:inline text-xs text-shell-foreground/70 border-l border-shell-border pl-2.5 ml-1 truncate">
+            Inteligência Pedagógica
+          </span>
         </div>
-        <nav className="flex-1 p-3 space-y-0.5">
-          {nav.map((item) => {
-            const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                  active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-          {isAdmin && (
-            <Link
-              to="/configuracoes"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                pathname.startsWith("/configuracoes")
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              )}
-            >
-              <Settings className="h-4 w-4" />
-              <span>Configurações</span>
-            </Link>
-          )}
-        </nav>
-        <div className="p-4 border-t border-sidebar-border text-[11px] text-sidebar-foreground/60">
-          v1.0 · Ambiente Homologação
-        </div>
-      </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-border bg-card px-6 flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              placeholder="Buscar aluno, turma, escola, INEP..."
-              className="w-full h-9 pl-9 pr-3 rounded-md border border-input bg-background text-sm outline-none focus:ring-2 focus:ring-ring/40"
-            />
-          </div>
-          <button className="relative h-9 w-9 rounded-md hover:bg-accent flex items-center justify-center">
+        <div className="relative flex-1 max-w-md mx-auto">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-shell-foreground/70" />
+          <input
+            placeholder="Buscar aluno, turma, escola, INEP..."
+            className="w-full h-8 pl-9 pr-3 rounded-sm border border-shell-border bg-shell-accent/60 text-sm text-shell-foreground placeholder:text-shell-foreground/60 outline-none focus:ring-2 focus:ring-ring/60"
+          />
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button className="relative h-8 w-8 rounded-sm hover:bg-shell-accent flex items-center justify-center">
             <Bell className="h-4 w-4" />
-            <span className="absolute top-1.5 right-2 h-1.5 w-1.5 rounded-full bg-destructive" />
+            <span className="absolute top-1 right-1.5 h-1.5 w-1.5 rounded-full bg-destructive" />
           </button>
-          <div className="flex items-center gap-2 pl-3 border-l border-border">
-            <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center justify-center">
+          <div className="flex items-center gap-2 pl-2 ml-1 border-l border-shell-border">
+            <div className="h-7 w-7 rounded-full bg-shell-accent text-[11px] font-semibold flex items-center justify-center">
               {initialsFrom(profile?.nome, null)}
             </div>
-            <div className="text-xs leading-tight">
+            <div className="hidden sm:block text-xs leading-tight">
               <div className="font-medium">{profile?.nome ?? "—"}</div>
-              <div className="text-muted-foreground">{roleLabel}</div>
+              <div className="text-shell-foreground/70">{roleLabel}</div>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleSignOut} title="Sair" className="ml-1">
+            <button
+              onClick={handleSignOut}
+              title="Sair"
+              className="h-8 w-8 rounded-sm hover:bg-shell-accent flex items-center justify-center"
+            >
               <LogOut className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
-        </header>
-        <main className="flex-1 overflow-auto">{children}</main>
+        </div>
+      </header>
+
+      <div className="flex-1 flex min-h-0 w-full">
+        <aside className="w-64 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border">
+          <nav className="flex-1 p-2 space-y-0.5 overflow-auto">
+            {nav.map((item) => {
+              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-sm text-sm transition-colors border-l-2",
+                    active
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground border-primary font-medium"
+                      : "border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+            {isAdmin && (
+              <Link
+                to="/configuracoes"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-sm text-sm transition-colors border-l-2",
+                  pathname.startsWith("/configuracoes")
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground border-primary font-medium"
+                    : "border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                )}
+              >
+                <Settings className="h-4 w-4" />
+                <span>Configurações</span>
+              </Link>
+            )}
+          </nav>
+          <div className="p-4 border-t border-sidebar-border text-[11px] text-muted-foreground">
+            v1.0 · Ambiente Homologação
+          </div>
+        </aside>
+
+        <main className="flex-1 overflow-auto min-w-0">{children}</main>
       </div>
     </div>
   );
 }
+
 
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: ReactNode }) {
   return (
