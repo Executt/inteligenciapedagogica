@@ -4,6 +4,42 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* =========================================================================
+   HUB-GOV Design System · Horizon
+   Token architecture: RAW -> REFERENCE -> SEMANTIC
+   Components must consume SEMANTIC tokens only (never raw hex).
+   ========================================================================= */
+
+/* ---- RAW / REFERENCE layer (Horizon palette) ---------------------------- */
+:root {
+  --blue-1: #f5faff;
+  --blue-2: #d1e8ff;
+  --blue-3: #a6d5ff;
+  --blue-5: #4db1ff;
+  --blue-6: #0064d9;
+  --blue-7: #0070f2;
+  --blue-8: #0057d2;
+  --blue-9: #002a86;
+  --grey-1: #ffffff;
+  --grey-2: #f5f6f7;
+  --grey-3: #eaecee;
+  --grey-4: #d9d9d9;
+  --grey-5: #a9b4be;
+  --grey-6: #758ca4;
+  --grey-7: #475e75;
+  --grey-8: #354a5f;
+  --grey-9: #1d2d3e;
+  --grey-10: #12232f;
+  --green-6: #256f3a;
+  --green-7: #36a41d;
+  --orange-6: #e76500;
+  --orange-7: #f58b00;
+  --red-6: #aa0808;
+  --red-7: #f53232;
+  --teal-6: #049f9a;
+  --indigo-6: #5d36ff;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -48,91 +84,133 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: "Inter", system-ui, sans-serif;
+  /* Shell bar (Fiori launchpad header) */
+  --color-shell: var(--shell);
+  --color-shell-foreground: var(--shell-foreground);
+  --color-shell-border: var(--shell-border);
+  --color-shell-accent: var(--shell-accent);
+  --font-sans: "Inter", "72", "72full", Arial, Helvetica, sans-serif;
 }
 
+/* ---- SEMANTIC layer · Morning Horizon (light) --------------------------- */
 :root {
   --radius: 0.5rem;
-  /* Institutional palette: SAP-like sober blue + neutral greys */
-  --background: oklch(0.985 0.003 240);
-  --foreground: oklch(0.20 0.03 250);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.20 0.03 250);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.20 0.03 250);
-  --primary: oklch(0.48 0.16 255);        /* SAP institutional blue */
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.01 240);
-  --secondary-foreground: oklch(0.25 0.03 250);
-  --muted: oklch(0.96 0.008 240);
-  --muted-foreground: oklch(0.48 0.02 250);
-  --accent: oklch(0.93 0.03 250);
-  --accent-foreground: oklch(0.25 0.05 255);
-  --destructive: oklch(0.52 0.22 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.55 0.14 145);
-  --success-foreground: oklch(0.99 0 0);
-  --warning: oklch(0.70 0.16 60);
-  --warning-foreground: oklch(0.20 0.03 60);
-  --info: oklch(0.60 0.13 230);
-  --info-foreground: oklch(0.99 0 0);
-  --border: oklch(0.90 0.01 240);
-  --input: oklch(0.92 0.01 240);
-  --ring: oklch(0.48 0.16 255);
-  --chart-1: oklch(0.48 0.16 255);
-  --chart-2: oklch(0.60 0.13 200);
-  --chart-3: oklch(0.55 0.14 145);
-  --chart-4: oklch(0.70 0.16 60);
-  --chart-5: oklch(0.52 0.22 27);
-  --sidebar: oklch(0.24 0.04 255);
-  --sidebar-foreground: oklch(0.93 0.01 240);
-  --sidebar-primary: oklch(0.58 0.18 255);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.30 0.05 255);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.32 0.04 255);
-  --sidebar-ring: oklch(0.58 0.18 255);
+
+  --background: var(--grey-2);
+  --foreground: var(--grey-9);
+  --card: var(--grey-1);
+  --card-foreground: var(--grey-9);
+  --popover: var(--grey-1);
+  --popover-foreground: var(--grey-9);
+
+  --primary: var(--blue-7);
+  --primary-foreground: var(--grey-1);
+  --interactive-primary: var(--blue-7);
+  --interactive-primary-hover: var(--blue-8);
+  --link: var(--blue-6);
+
+  --secondary: var(--grey-3);
+  --secondary-foreground: var(--grey-8);
+  --muted: var(--grey-3);
+  --muted-foreground: var(--grey-7);
+  --accent: var(--blue-2);
+  --accent-foreground: var(--blue-9);
+
+  --destructive: var(--red-6);
+  --destructive-foreground: var(--grey-1);
+  --success: var(--green-6);
+  --success-foreground: var(--grey-1);
+  --warning: var(--orange-6);
+  --warning-foreground: var(--grey-1);
+  --info: var(--blue-7);
+  --info-foreground: var(--grey-1);
+
+  --border: var(--grey-4);
+  --input: var(--grey-5);
+  --ring: var(--blue-7);
+
+  --chart-1: var(--blue-7);
+  --chart-2: var(--teal-6);
+  --chart-3: var(--green-7);
+  --chart-4: var(--orange-7);
+  --chart-5: var(--indigo-6);
+
+  /* Shell bar: Horizon uses a dark neutral header over a light canvas */
+  --shell: var(--grey-8);
+  --shell-foreground: var(--grey-1);
+  --shell-border: var(--grey-7);
+  --shell-accent: #46617c;
+
+  /* Side navigation: Fiori light nav with blue selection */
+  --sidebar: var(--grey-1);
+  --sidebar-foreground: var(--grey-9);
+  --sidebar-primary: var(--blue-2);
+  --sidebar-primary-foreground: var(--blue-9);
+  --sidebar-accent: var(--grey-2);
+  --sidebar-accent-foreground: var(--grey-9);
+  --sidebar-border: var(--grey-4);
+  --sidebar-ring: var(--blue-7);
+
+  /* Elevation (Horizon shadow scale) */
+  --shadow-level-0: 0 0 0 1px rgb(0 0 0 / 0.05);
+  --shadow-level-1: 0 0 0.125rem 0 rgb(29 45 62 / 0.16), 0 0.125rem 0.5rem 0 rgb(29 45 62 / 0.1);
+  --shadow-level-2: 0 0 0.25rem 0 rgb(29 45 62 / 0.16), 0 0.5rem 1rem 0 rgb(29 45 62 / 0.1);
 }
 
+/* ---- SEMANTIC layer · Evening Horizon (dark) --------------------------- */
 .dark {
-  --background: oklch(0.16 0.02 250);
-  --foreground: oklch(0.96 0.005 240);
-  --card: oklch(0.22 0.03 255);
-  --card-foreground: oklch(0.96 0.005 240);
-  --popover: oklch(0.22 0.03 255);
-  --popover-foreground: oklch(0.96 0.005 240);
-  --primary: oklch(0.65 0.17 255);
-  --primary-foreground: oklch(0.15 0.03 255);
-  --secondary: oklch(0.28 0.03 255);
-  --secondary-foreground: oklch(0.96 0.005 240);
-  --muted: oklch(0.26 0.02 250);
-  --muted-foreground: oklch(0.70 0.02 250);
-  --accent: oklch(0.30 0.05 255);
-  --accent-foreground: oklch(0.96 0.005 240);
-  --destructive: oklch(0.62 0.20 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.65 0.15 145);
-  --success-foreground: oklch(0.15 0.03 145);
-  --warning: oklch(0.75 0.16 60);
-  --warning-foreground: oklch(0.15 0.03 60);
-  --info: oklch(0.70 0.14 230);
-  --info-foreground: oklch(0.15 0.03 230);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.17 255);
-  --chart-1: oklch(0.65 0.17 255);
-  --chart-2: oklch(0.70 0.14 200);
-  --chart-3: oklch(0.65 0.15 145);
-  --chart-4: oklch(0.78 0.16 60);
-  --chart-5: oklch(0.62 0.20 27);
-  --sidebar: oklch(0.14 0.02 250);
-  --sidebar-foreground: oklch(0.93 0.01 240);
-  --sidebar-primary: oklch(0.65 0.17 255);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.22 0.03 255);
-  --sidebar-accent-foreground: oklch(0.96 0.005 240);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.65 0.17 255);
+  --background: #1d232a;
+  --foreground: #eaecee;
+  --card: #23272c;
+  --card-foreground: #eaecee;
+  --popover: #23272c;
+  --popover-foreground: #eaecee;
+
+  --primary: #4db1ff;
+  --primary-foreground: #12232f;
+  --interactive-primary: #4db1ff;
+  --interactive-primary-hover: #a6d5ff;
+  --link: #7bcfff;
+
+  --secondary: #2e3339;
+  --secondary-foreground: #eaecee;
+  --muted: #2b3138;
+  --muted-foreground: #a9b4be;
+  --accent: #1c3d5c;
+  --accent-foreground: #d1e8ff;
+
+  --destructive: #ff8888;
+  --destructive-foreground: #12232f;
+  --success: #4bd884;
+  --success-foreground: #12232f;
+  --warning: #f5a300;
+  --warning-foreground: #12232f;
+  --info: #7bcfff;
+  --info-foreground: #12232f;
+
+  --border: #3a4149;
+  --input: #4a525b;
+  --ring: #4db1ff;
+
+  --chart-1: #4db1ff;
+  --chart-2: #45d5d0;
+  --chart-3: #4bd884;
+  --chart-4: #f5a300;
+  --chart-5: #a08cff;
+
+  --shell: #12232f;
+  --shell-foreground: #eaecee;
+  --shell-border: #2e3d49;
+  --shell-accent: #23394a;
+
+  --sidebar: #23272c;
+  --sidebar-foreground: #eaecee;
+  --sidebar-primary: #1c3d5c;
+  --sidebar-primary-foreground: #d1e8ff;
+  --sidebar-accent: #2e3339;
+  --sidebar-accent-foreground: #eaecee;
+  --sidebar-border: #3a4149;
+  --sidebar-ring: #4db1ff;
 }
 
 @layer base {
@@ -143,6 +221,21 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-size: 0.875rem;
+    line-height: 1.4;
   }
+  h1 {
+    letter-spacing: -0.0125em;
+  }
+}
+
+/* ---- Horizon elevation utilities --------------------------------------- */
+@utility elevation-0 {
+  box-shadow: var(--shadow-level-0);
+}
+@utility elevation-1 {
+  box-shadow: var(--shadow-level-1);
+}
+@utility elevation-2 {
+  box-shadow: var(--shadow-level-2);
 }
