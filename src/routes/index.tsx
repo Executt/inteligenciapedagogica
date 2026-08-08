@@ -1,15 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { gridProps, axisProps, tooltipProps, legendProps } from "@/lib/chart-theme";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { fetchEscolaDashboard, fetchSugestoesIA } from "@/lib/api";
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Area, AreaChart, BarChart, Bar, Legend,
-} from "recharts";
+  ChartFrame, ChartGrid, ChartXAxis, ChartYAxis, ChartTooltip, ChartLegend,
+  areaSeries, barSeries, lineSeries,
+} from "@/components/ui/chart-frame";
+import { fetchEscolaDashboard, fetchSugestoesIA } from "@/lib/api";
+import { AreaChart, Area, Line, BarChart, Bar } from "recharts";
+
 import { AlertTriangle, TrendingUp, TrendingDown, Users, GraduationCap, Sparkles, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({ component: Overview });
