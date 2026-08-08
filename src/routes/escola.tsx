@@ -31,10 +31,20 @@ function EscolaView() {
           title="Visão da Escola"
           subtitle={escola ? `${escola.nome} · INEP ${escola.codigoInep} · ${escola.municipio}` : "Carregando..."}
           actions={
-            <select className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-              {escolas.data?.map((e) => <option key={e.id}>{e.nome}</option>)}
-            </select>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="escola-seletor" className="text-xs text-muted-foreground">
+                Unidade
+              </Label>
+              <select
+                id="escola-seletor"
+                aria-label="Selecionar unidade escolar"
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {escolas.data?.map((e) => <option key={e.id}>{e.nome}</option>)}
+              </select>
+            </div>
           }
+
         />
 
         <div className="grid grid-cols-4 gap-4 mb-6">
