@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { gridProps, axisProps, tooltipProps, legendProps, polarGridProps, polarTickProps } from "@/lib/chart-theme";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +6,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { fetchAlunoMetrics } from "@/lib/api";
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-} from "recharts";
+  ChartFrame, ChartGrid, ChartXAxis, ChartYAxis, ChartTooltip, ChartLegend,
+  ChartPolarGrid, ChartPolarAngleAxis, ChartPolarRadiusAxis, lineSeries,
+} from "@/components/ui/chart-frame";
+import { chartSeriesColor } from "@/lib/chart-theme";
+import { fetchAlunoMetrics } from "@/lib/api";
+import { LineChart, Line, RadarChart, Radar } from "recharts";
+
 import { CalendarClock, GraduationCap, Users, BarChart3, Brain } from "lucide-react";
 import {
   UploadZone, DocumentosList, GerarAnalise, AnalisesHistorico, RequireAuth,
