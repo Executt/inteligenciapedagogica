@@ -74,40 +74,41 @@ function AlunoView() {
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-              <Card className="col-span-2">
-                <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><GraduationCap className="h-4 w-4" /> Evolução das Notas por Bimestre</CardTitle></CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={280}>
-                    <LineChart data={data.timeline}>
-                      <CartesianGrid {...gridProps} />
-                      <XAxis dataKey="bimestre" {...axisProps} />
-                      <YAxis domain={[0, 10]} {...axisProps} />
-                      <Tooltip {...tooltipProps} />
-                      <Legend {...legendProps} />
-                      <Line type="monotone" dataKey="Português" stroke="var(--color-chart-1)" strokeWidth={2} />
-                      <Line type="monotone" dataKey="Matemática" stroke="var(--color-chart-2)" strokeWidth={2} />
-                      <Line type="monotone" dataKey="Ciências" stroke="var(--color-chart-3)" strokeWidth={2} />
-                      <Line type="monotone" dataKey="História" stroke="var(--color-chart-4)" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4" /> Competências Socioemocionais</CardTitle></CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={280}>
-                    <RadarChart data={data.socioemocional}>
-                      <PolarGrid {...polarGridProps} />
-                      <PolarAngleAxis dataKey="competencia" tick={polarTickProps} />
-                      <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} />
-                      <Radar name="Nível" dataKey="nivel" stroke="var(--color-primary)" fill="var(--color-primary)" fillOpacity={0.35} />
-                      <Tooltip {...tooltipProps} />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                  <p className="text-[11px] text-muted-foreground mt-2">Extraído por NLP de 24 relatos docentes e 3 observações pedagógicas.</p>
-                </CardContent>
-              </Card>
+              <ChartFrame
+                className="col-span-2"
+                title="Evolução das Notas por Bimestre"
+                description="Escala 0–10 por disciplina."
+                height={280}
+                empty={(data.timeline?.length ?? 0) === 0}
+              >
+                <LineChart data={data.timeline}>
+                  <ChartGrid />
+                  <ChartXAxis dataKey="bimestre" />
+                  <ChartYAxis domain={[0, 10]} />
+                  <ChartTooltip />
+                  <ChartLegend />
+                  <Line dataKey="Português" {...lineSeries(0)} />
+                  <Line dataKey="Matemática" {...lineSeries(1)} />
+                  <Line dataKey="Ciências" {...lineSeries(2)} />
+                  <Line dataKey="História" {...lineSeries(3)} />
+                </LineChart>
+              </ChartFrame>
+
+              <ChartFrame
+                title="Competências Socioemocionais"
+                height={280}
+                footnote="Extraído por NLP de 24 relatos docentes e 3 observações pedagógicas."
+              >
+                <RadarChart data={data.socioemocional}>
+                  <ChartPolarGrid />
+                  <ChartPolarAngleAxis dataKey="competencia" />
+                  <ChartPolarRadiusAxis angle={30} domain={[0, 100]} />
+                  <Radar name="Nível" dataKey="nivel" stroke={chartSeriesColor(0)} fill={chartSeriesColor(0)} fillOpacity={0.35} />
+                  <ChartTooltip />
+                </RadarChart>
+              </ChartFrame>
             </div>
+
 
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><CalendarClock className="h-4 w-4" /> Histórico de Intervenções Pedagógicas</CardTitle></CardHeader>
