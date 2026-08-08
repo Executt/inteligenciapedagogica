@@ -45,11 +45,12 @@ function TurmaView() {
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <table className="w-full text-xs border-separate border-spacing-1">
+                  <caption className="sr-only">Rendimento de cada aluno por disciplina, em escala de 0 a 10</caption>
                   <thead>
                     <tr>
-                      <th className="text-left font-medium text-muted-foreground pb-2 min-w-[180px]">Aluno</th>
-                      {disciplinas.map((d) => <th key={d} className="text-center font-medium text-muted-foreground pb-2">{d}</th>)}
-                      <th className="text-center font-medium text-muted-foreground pb-2">Média</th>
+                      <th scope="col" className="text-left font-medium text-muted-foreground pb-2 min-w-[180px]">Aluno</th>
+                      {disciplinas.map((d) => <th key={d} scope="col" className="text-center font-medium text-muted-foreground pb-2">{d}</th>)}
+                      <th scope="col" className="text-center font-medium text-muted-foreground pb-2">Média</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -58,7 +59,7 @@ function TurmaView() {
                       const media = notas.reduce((a, b) => a + b, 0) / notas.length;
                       return (
                         <tr key={row.id as string}>
-                          <td className="font-medium py-1 pr-3">{row.aluno as string}</td>
+                          <th scope="row" className="text-left font-medium py-1 pr-3">{row.aluno as string}</th>
                           {disciplinas.map((d) => {
                             const v = Math.max(0, Math.min(10, row[d] as number));
                             return (
