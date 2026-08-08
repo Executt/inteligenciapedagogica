@@ -73,32 +73,31 @@ function Overview() {
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <Card className="col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Evolução dos Indicadores (últimos 10 meses)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {dash.isLoading ? <Skeleton className="h-[280px]" /> : (
-                <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart data={dash.data!.evolucao}>
-                    <defs>
-                      <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid {...gridProps} />
-                    <XAxis dataKey="mes" {...axisProps} />
-                    <YAxis {...axisProps} />
-                    <Tooltip {...tooltipProps} />
-                    <Legend {...legendProps} />
-                    <Area type="monotone" dataKey="media" stroke="var(--color-primary)" fill="url(#g1)" name="Média Geral" strokeWidth={2} />
-                    <Line type="monotone" dataKey="frequencia" stroke="var(--color-chart-3)" name="Frequência %" strokeWidth={2} dot={false} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
+          <ChartFrame
+            className="col-span-2"
+            title="Evolução dos Indicadores (últimos 10 meses)"
+            description="Média geral e frequência consolidadas da rede."
+            height={280}
+            loading={dash.isLoading}
+            error={dash.isError}
+          >
+            <AreaChart data={dash.data?.evolucao ?? []}>
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <ChartGrid />
+              <ChartXAxis dataKey="mes" />
+              <ChartYAxis />
+              <ChartTooltip />
+              <ChartLegend />
+              <Area dataKey="media" name="Média Geral" {...areaSeries(0, { fill: "url(#g1)", fillOpacity: 1 })} />
+              <Line dataKey="frequencia" name="Frequência %" {...lineSeries(2)} />
+            </AreaChart>
+          </ChartFrame>
+
 
           <Card>
             <CardHeader className="pb-2">
