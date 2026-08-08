@@ -5,12 +5,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTable } from "@/components/ui/data-table";
 import { fetchTurmaAnalytics } from "@/lib/api";
 import { disciplinas } from "@/lib/mock-data";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 
-export const Route = createFileRoute("/turma/$id")({ component: TurmaView });
+
+export const Route = createFileRoute("/turma/$id")({
+  component: TurmaView,
+  head: () => ({
+    meta: [
+      { title: "Análise da Turma · Edu-Gov" },
+      { name: "description", content: "Mapa de calor de rendimento por disciplina e alunos que necessitam de atenção imediata." },
+      { property: "og:title", content: "Análise da Turma · Edu-Gov" },
+      { property: "og:description", content: "Rendimento por disciplina e alertas pedagógicos da turma." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 function heatColor(v: number) {
   // 0-10 scale: red -> yellow -> green using primary/warning/success
@@ -44,11 +57,12 @@ function TurmaView() {
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <table className="w-full text-xs border-separate border-spacing-1">
+                  <caption className="sr-only">Rendimento de cada aluno por disciplina, em escala de 0 a 10</caption>
                   <thead>
                     <tr>
-                      <th className="text-left font-medium text-muted-foreground pb-2 min-w-[180px]">Aluno</th>
-                      {disciplinas.map((d) => <th key={d} className="text-center font-medium text-muted-foreground pb-2">{d}</th>)}
-                      <th className="text-center font-medium text-muted-foreground pb-2">Média</th>
+                      <th scope="col" className="text-left font-medium text-muted-foreground pb-2 min-w-[180px]">Aluno</th>
+                      {disciplinas.map((d) => <th key={d} scope="col" className="text-center font-medium text-muted-foreground pb-2">{d}</th>)}
+                      <th scope="col" className="text-center font-medium text-muted-foreground pb-2">Média</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -57,7 +71,7 @@ function TurmaView() {
                       const media = notas.reduce((a, b) => a + b, 0) / notas.length;
                       return (
                         <tr key={row.id as string}>
-                          <td className="font-medium py-1 pr-3">{row.aluno as string}</td>
+                          <th scope="row" className="text-left font-medium py-1 pr-3">{row.aluno as string}</th>
                           {disciplinas.map((d) => {
                             const v = Math.max(0, Math.min(10, row[d] as number));
                             return (
@@ -83,44 +97,46 @@ function TurmaView() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-destructive" />
+            <DataTable
+              title={
+                <span className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
                   Alunos que necessitam de atenção imediata ({data!.atencaoImediata.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Aluno</TableHead><TableHead>Matrícula</TableHead>
-                      <TableHead className="text-right">Média</TableHead>
-                      <TableHead className="text-right">Frequência</TableHead>
-                      <TableHead>Risco</TableHead><TableHead></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data!.atencaoImediata.map((a) => (
-                      <TableRow key={a.id}>
-                        <TableCell className="font-medium">{a.nome}</TableCell>
-                        <TableCell className="font-mono text-xs">{a.matricula}</TableCell>
-                        <TableCell className="text-right font-mono">{a.mediaGeral}</TableCell>
-                        <TableCell className="text-right font-mono">{a.frequencia}%</TableCell>
-                        <TableCell>
-                          <Badge variant={a.risco === "alto" ? "destructive" : "secondary"}>{a.risco}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button asChild variant="ghost" size="sm">
-                            <Link to="/aluno/$id" params={{ id: a.id }}>Dossiê <ChevronRight className="h-3 w-3" /></Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                </span>
+              }
+              columns={[
+                { id: "nome", header: "Aluno", className: "font-medium", cell: (a: any) => a.nome },
+                { id: "mat", header: "Matrícula", className: "font-mono text-xs", cell: (a: any) => a.matricula },
+                { id: "media", header: "Média", align: "right", className: "font-mono", cell: (a: any) => a.mediaGeral },
+                { id: "freq", header: "Frequência", align: "right", className: "font-mono", cell: (a: any) => `${a.frequencia}%` },
+                {
+                  id: "risco",
+                  header: "Risco",
+                  cell: (a: any) => (
+                    <Badge variant={a.risco === "alto" ? "destructive" : "warning"}>{a.risco}</Badge>
+                  ),
+                },
+                {
+                  id: "acao",
+                  header: <span className="sr-only">Ações</span>,
+                  align: "right",
+                  cell: (a: any) => (
+                    <Button asChild variant="ghost" size="sm">
+                      <Link to="/aluno/$id" params={{ id: a.id }}>
+                        Dossiê <ChevronRight className="h-3 w-3" aria-hidden="true" />
+                      </Link>
+                    </Button>
+                  ),
+                },
+              ]}
+              rows={data!.atencaoImediata}
+              rowKey={(a: any) => a.id}
+              pageSize={10}
+              caption="Alunos com indicadores críticos na turma"
+              emptyTitle="Nenhum aluno em situação crítica"
+              emptyDescription="Todos os alunos desta turma estão dentro dos parâmetros esperados."
+            />
+
           </>
         )}
       </div>

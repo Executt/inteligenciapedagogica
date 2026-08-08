@@ -1,16 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { gridProps, axisProps, tooltipProps, legendProps } from "@/lib/chart-theme";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { fetchEscolaDashboard, fetchEscolas, fetchTurmas } from "@/lib/api";
+import { Label } from "@/components/ui/label";
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, LineChart, Line,
-  RadialBarChart, RadialBar, PolarAngleAxis,
-} from "recharts";
+  ChartFrame, ChartGrid, ChartXAxis, ChartYAxis, ChartTooltip, ChartLegend,
+  barSeries, lineSeries,
+} from "@/components/ui/chart-frame";
+import { chartSeriesColor } from "@/lib/chart-theme";
+import { fetchEscolaDashboard, fetchEscolas, fetchTurmas } from "@/lib/api";
+import { BarChart, Bar, LineChart, Line, RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
 import { AlertTriangle, GraduationCap, TrendingDown, TrendingUp, Users } from "lucide-react";
+
 
 export const Route = createFileRoute("/escola")({ component: EscolaView });
 
@@ -28,10 +31,20 @@ function EscolaView() {
           title="Visão da Escola"
           subtitle={escola ? `${escola.nome} · INEP ${escola.codigoInep} · ${escola.municipio}` : "Carregando..."}
           actions={
-            <select className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-              {escolas.data?.map((e) => <option key={e.id}>{e.nome}</option>)}
-            </select>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="escola-seletor" className="text-xs text-muted-foreground">
+                Unidade
+              </Label>
+              <select
+                id="escola-seletor"
+                aria-label="Selecionar unidade escolar"
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {escolas.data?.map((e) => <option key={e.id}>{e.nome}</option>)}
+              </select>
+            </div>
           }
+
         />
 
         <div className="grid grid-cols-4 gap-4 mb-6">
@@ -46,65 +59,67 @@ function EscolaView() {
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <Card className="col-span-2">
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Comparativo entre Turmas</CardTitle></CardHeader>
-            <CardContent>
-              {dash.isLoading ? <Skeleton className="h-[320px]" /> : (
-                <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={dash.data!.desempenhoTurmas}>
-                    <CartesianGrid {...gridProps} />
-                    <XAxis dataKey="turma" {...axisProps} />
-                    <YAxis {...axisProps} />
-                    <Tooltip {...tooltipProps} />
-                    <Legend {...legendProps} />
-                    <Bar dataKey="media" fill="var(--color-primary)" name="Média" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="frequencia" fill="var(--color-chart-3)" name="Frequência %" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="aprovacao" fill="var(--color-chart-2)" name="Aprovação %" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Indicadores Institucionais</CardTitle></CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={320}>
-                <RadialBarChart innerRadius="30%" outerRadius="100%" data={[
-                  { name: "Aprovação", value: 87, fill: "var(--color-chart-3)" },
-                  { name: "Frequência", value: 89, fill: "var(--color-primary)" },
-                  { name: "Retenção", value: 92, fill: "var(--color-chart-2)" },
-                  { name: "IDEB proj.", value: 74, fill: "var(--color-chart-4)" },
-                ]}>
-                  <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                  <RadialBar background dataKey="value" cornerRadius={6} />
-                  <Legend {...legendProps} />
-                  <Tooltip {...tooltipProps} />
-                </RadialBarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <ChartFrame
+            className="col-span-2"
+            title="Comparativo entre Turmas"
+            description="Média, frequência e aprovação por turma."
+            height={320}
+            loading={dash.isLoading}
+            error={dash.isError}
+            empty={!dash.isLoading && (dash.data?.desempenhoTurmas?.length ?? 0) === 0}
+          >
+            <BarChart data={dash.data?.desempenhoTurmas ?? []}>
+              <ChartGrid />
+              <ChartXAxis dataKey="turma" />
+              <ChartYAxis />
+              <ChartTooltip />
+              <ChartLegend />
+              <Bar dataKey="media" name="Média" {...barSeries(0)} />
+              <Bar dataKey="frequencia" name="Frequência %" {...barSeries(2)} />
+              <Bar dataKey="aprovacao" name="Aprovação %" {...barSeries(1)} />
+            </BarChart>
+          </ChartFrame>
+
+          <ChartFrame title="Indicadores Institucionais" height={320}>
+            <RadialBarChart
+              innerRadius="30%"
+              outerRadius="100%"
+              data={[
+                { name: "Aprovação", value: 87, fill: chartSeriesColor(2) },
+                { name: "Frequência", value: 89, fill: chartSeriesColor(0) },
+                { name: "Retenção", value: 92, fill: chartSeriesColor(1) },
+                { name: "IDEB proj.", value: 74, fill: chartSeriesColor(3) },
+              ]}
+            >
+              <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+              <RadialBar background dataKey="value" cornerRadius={6} />
+              <ChartLegend />
+              <ChartTooltip />
+            </RadialBarChart>
+          </ChartFrame>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <Card className="col-span-2">
-            <CardHeader className="pb-2"><CardTitle className="text-sm">Evolução Mensal</CardTitle></CardHeader>
-            <CardContent>
-              {dash.isLoading ? <Skeleton className="h-64" /> : (
-                <ResponsiveContainer width="100%" height={260}>
-                  <LineChart data={dash.data!.evolucao}>
-                    <CartesianGrid {...gridProps} />
-                    <XAxis dataKey="mes" {...axisProps} />
-                    <YAxis {...axisProps} />
-                    <Tooltip {...tooltipProps} />
-                    <Legend {...legendProps} />
-                    <Line type="monotone" dataKey="media" stroke="var(--color-primary)" name="Média" strokeWidth={2} />
-                    <Line type="monotone" dataKey="frequencia" stroke="var(--color-chart-3)" name="Frequência" strokeWidth={2} />
-                    <Line type="monotone" dataKey="evasao" stroke="var(--color-destructive)" name="Evasão %" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
+          <ChartFrame
+            className="col-span-2"
+            title="Evolução Mensal"
+            description="Séries usam cor e padrão de traço distintos."
+            height={260}
+            loading={dash.isLoading}
+            error={dash.isError}
+          >
+            <LineChart data={dash.data?.evolucao ?? []}>
+              <ChartGrid />
+              <ChartXAxis dataKey="mes" />
+              <ChartYAxis />
+              <ChartTooltip />
+              <ChartLegend />
+              <Line dataKey="media" name="Média" {...lineSeries(0)} />
+              <Line dataKey="frequencia" name="Frequência" {...lineSeries(2)} />
+              <Line dataKey="evasao" name="Evasão %" {...lineSeries(3, { stroke: "var(--color-destructive)" })} />
+            </LineChart>
+          </ChartFrame>
+
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4" /> Turmas da Escola</CardTitle></CardHeader>
             <CardContent className="divide-y divide-border">

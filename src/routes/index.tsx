@@ -1,15 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { gridProps, axisProps, tooltipProps, legendProps } from "@/lib/chart-theme";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { fetchEscolaDashboard, fetchSugestoesIA } from "@/lib/api";
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Area, AreaChart, BarChart, Bar, Legend,
-} from "recharts";
+  ChartFrame, ChartGrid, ChartXAxis, ChartYAxis, ChartTooltip, ChartLegend,
+  areaSeries, barSeries, lineSeries,
+} from "@/components/ui/chart-frame";
+import { fetchEscolaDashboard, fetchSugestoesIA } from "@/lib/api";
+import { AreaChart, Area, Line, BarChart, Bar } from "recharts";
+
 import { AlertTriangle, TrendingUp, TrendingDown, Users, GraduationCap, Sparkles, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({ component: Overview });
@@ -73,32 +75,31 @@ function Overview() {
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <Card className="col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Evolução dos Indicadores (últimos 10 meses)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {dash.isLoading ? <Skeleton className="h-[280px]" /> : (
-                <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart data={dash.data!.evolucao}>
-                    <defs>
-                      <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid {...gridProps} />
-                    <XAxis dataKey="mes" {...axisProps} />
-                    <YAxis {...axisProps} />
-                    <Tooltip {...tooltipProps} />
-                    <Legend {...legendProps} />
-                    <Area type="monotone" dataKey="media" stroke="var(--color-primary)" fill="url(#g1)" name="Média Geral" strokeWidth={2} />
-                    <Line type="monotone" dataKey="frequencia" stroke="var(--color-chart-3)" name="Frequência %" strokeWidth={2} dot={false} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
+          <ChartFrame
+            className="col-span-2"
+            title="Evolução dos Indicadores (últimos 10 meses)"
+            description="Média geral e frequência consolidadas da rede."
+            height={280}
+            loading={dash.isLoading}
+            error={dash.isError}
+          >
+            <AreaChart data={dash.data?.evolucao ?? []}>
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <ChartGrid />
+              <ChartXAxis dataKey="mes" />
+              <ChartYAxis />
+              <ChartTooltip />
+              <ChartLegend />
+              <Area dataKey="media" name="Média Geral" {...areaSeries(0, { fill: "url(#g1)", fillOpacity: 1 })} />
+              <Line dataKey="frequencia" name="Frequência %" {...lineSeries(2)} />
+            </AreaChart>
+          </ChartFrame>
+
 
           <Card>
             <CardHeader className="pb-2">
@@ -125,27 +126,26 @@ function Overview() {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Desempenho Comparativo entre Turmas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {dash.isLoading ? <Skeleton className="h-[280px]" /> : (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={dash.data!.desempenhoTurmas}>
-                  <CartesianGrid {...gridProps} />
-                  <XAxis dataKey="turma" {...axisProps} />
-                  <YAxis {...axisProps} />
-                  <Tooltip {...tooltipProps} />
-                  <Legend {...legendProps} />
-                  <Bar dataKey="media" fill="var(--color-primary)" name="Média" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="frequencia" fill="var(--color-chart-3)" name="Frequência %" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="aprovacao" fill="var(--color-chart-2)" name="Aprovação %" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+        <ChartFrame
+          title="Desempenho Comparativo entre Turmas"
+          description="Média, frequência e aprovação por turma no bimestre corrente."
+          height={280}
+          loading={dash.isLoading}
+          error={dash.isError}
+          empty={!dash.isLoading && (dash.data?.desempenhoTurmas?.length ?? 0) === 0}
+        >
+          <BarChart data={dash.data?.desempenhoTurmas ?? []}>
+            <ChartGrid />
+            <ChartXAxis dataKey="turma" />
+            <ChartYAxis />
+            <ChartTooltip />
+            <ChartLegend />
+            <Bar dataKey="media" name="Média" {...barSeries(0)} />
+            <Bar dataKey="frequencia" name="Frequência %" {...barSeries(2)} />
+            <Bar dataKey="aprovacao" name="Aprovação %" {...barSeries(1)} />
+          </BarChart>
+        </ChartFrame>
+
 
         <div className="mt-4 flex items-center gap-2 flex-wrap">
           <QuickLink to="/entidades" label="Cadastrar entidades" />

@@ -164,14 +164,14 @@ function ConectoresTab() {
                   <div className="text-muted-foreground truncate">{c.ultimo_teste_mensagem ?? "—"}</div>
                 </TableCell>
                 <TableCell className="text-right whitespace-nowrap">
-                  <Button variant="ghost" size="icon" title="Testar conexão"
+                  <Button variant="ghost" size="icon" aria-label="Testar conexão" title="Testar conexão"
                     disabled={testar.isPending} onClick={() => testar.mutate(c.id)}>
                     <Play className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" title="Editar" onClick={() => setForm({ ...c })}>
+                  <Button variant="ghost" size="icon" aria-label="Editar" title="Editar" onClick={() => setForm({ ...c })}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" title="Remover" onClick={() => excluir.mutate(c.id)}>
+                  <Button variant="ghost" size="icon" aria-label="Remover" title="Remover" onClick={() => excluir.mutate(c.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>
@@ -480,7 +480,7 @@ function BarramentoTab() {
                     await upsertSub({ data: { consumidor: s.consumidor, evento: s.evento, ativo: v } });
                     qc.invalidateQueries({ queryKey: ["hub", "subs"] });
                   }} />
-                  <Button variant="ghost" size="icon" onClick={async () => {
+                  <Button variant="ghost" size="icon" aria-label="Remover assinatura" onClick={async () => {
                     await rmSub({ data: { id: s.id } });
                     qc.invalidateQueries({ queryKey: ["hub", "subs"] });
                   }}><Trash2 className="h-4 w-4" /></Button>

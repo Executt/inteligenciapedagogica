@@ -116,7 +116,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-dvh bg-background flex items-center justify-center p-6">
       <Card className="w-full max-w-md">
         <CardContent className="p-8">
           <div className="flex items-center gap-2 mb-6">

@@ -129,7 +129,7 @@ export function MappingsTab() {
                 <TableCell className="font-mono text-xs max-w-[180px] truncate">{m.validacao || "—"}</TableCell>
                 <TableCell>{m.chave_deduplicacao ? <Badge variant="secondary"><ShieldCheck className="h-3 w-3 mr-1" />chave</Badge> : "—"}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => excluir.mutate(m.id)}><Trash2 className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" aria-label="Remover mapeamento" onClick={() => excluir.mutate(m.id)}><Trash2 className="h-4 w-4" /></Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -215,7 +215,7 @@ export function MappingsTab() {
                     <span className="text-muted-foreground">#{l.indice + 1}</span>
                     {l.duplicado && <Badge variant="secondary">duplicado</Badge>}
                     {l.erros.length > 0 && <Badge variant="destructive">{l.erros.length} erro(s)</Badge>}
-                    <Button variant="ghost" size="icon" className="h-6 w-6"
+                    <Button variant="ghost" size="icon" aria-label="Copiar registro" className="h-6 w-6"
                       onClick={() => { navigator.clipboard.writeText(JSON.stringify(l.registro, null, 2)); toast.success("Registro copiado."); }}>
                       <Copy className="h-3 w-3" />
                     </Button>
