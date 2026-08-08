@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTable } from "@/components/ui/data-table";
 import { fetchTurmaAnalytics } from "@/lib/api";
 import { disciplinas } from "@/lib/mock-data";
 import { AlertTriangle, ChevronRight } from "lucide-react";
+
 
 export const Route = createFileRoute("/turma/$id")({ component: TurmaView });
 
