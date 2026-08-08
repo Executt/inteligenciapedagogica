@@ -125,27 +125,26 @@ function Overview() {
           </Card>
         </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Desempenho Comparativo entre Turmas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {dash.isLoading ? <Skeleton className="h-[280px]" /> : (
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={dash.data!.desempenhoTurmas}>
-                  <CartesianGrid {...gridProps} />
-                  <XAxis dataKey="turma" {...axisProps} />
-                  <YAxis {...axisProps} />
-                  <Tooltip {...tooltipProps} />
-                  <Legend {...legendProps} />
-                  <Bar dataKey="media" fill="var(--color-primary)" name="Média" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="frequencia" fill="var(--color-chart-3)" name="Frequência %" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="aprovacao" fill="var(--color-chart-2)" name="Aprovação %" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+        <ChartFrame
+          title="Desempenho Comparativo entre Turmas"
+          description="Média, frequência e aprovação por turma no bimestre corrente."
+          height={280}
+          loading={dash.isLoading}
+          error={dash.isError}
+          empty={!dash.isLoading && (dash.data?.desempenhoTurmas?.length ?? 0) === 0}
+        >
+          <BarChart data={dash.data?.desempenhoTurmas ?? []}>
+            <ChartGrid />
+            <ChartXAxis dataKey="turma" />
+            <ChartYAxis />
+            <ChartTooltip />
+            <ChartLegend />
+            <Bar dataKey="media" name="Média" {...barSeries(0)} />
+            <Bar dataKey="frequencia" name="Frequência %" {...barSeries(2)} />
+            <Bar dataKey="aprovacao" name="Aprovação %" {...barSeries(1)} />
+          </BarChart>
+        </ChartFrame>
+
 
         <div className="mt-4 flex items-center gap-2 flex-wrap">
           <QuickLink to="/entidades" label="Cadastrar entidades" />
