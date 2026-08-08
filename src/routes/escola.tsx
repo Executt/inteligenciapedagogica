@@ -1,16 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { gridProps, axisProps, tooltipProps, legendProps } from "@/lib/chart-theme";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { fetchEscolaDashboard, fetchEscolas, fetchTurmas } from "@/lib/api";
+import { Label } from "@/components/ui/label";
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, LineChart, Line,
-  RadialBarChart, RadialBar, PolarAngleAxis,
-} from "recharts";
+  ChartFrame, ChartGrid, ChartXAxis, ChartYAxis, ChartTooltip, ChartLegend,
+  barSeries, lineSeries,
+} from "@/components/ui/chart-frame";
+import { chartSeriesColor } from "@/lib/chart-theme";
+import { fetchEscolaDashboard, fetchEscolas, fetchTurmas } from "@/lib/api";
+import { BarChart, Bar, LineChart, Line, RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
 import { AlertTriangle, GraduationCap, TrendingDown, TrendingUp, Users } from "lucide-react";
+
 
 export const Route = createFileRoute("/escola")({ component: EscolaView });
 
