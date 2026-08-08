@@ -201,7 +201,7 @@ export function DocumentosList({ alunoId }: { alunoId: string }) {
                   </div>
                 )}
               </div>
-              <Button variant="ghost" size="icon" onClick={() => delMut.mutate(d.id)}>
+              <Button variant="ghost" size="icon" aria-label="Remover documento" onClick={() => delMut.mutate(d.id)}>
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>

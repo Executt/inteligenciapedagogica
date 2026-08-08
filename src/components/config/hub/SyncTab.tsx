@@ -157,18 +157,18 @@ export function SyncTab() {
                   <div className="text-xs text-muted-foreground max-w-[200px] truncate">{j.ultima_mensagem ?? ""}</div>
                 </TableCell>
                 <TableCell className="text-right whitespace-nowrap">
-                  <Button variant="ghost" size="icon" title="Executar agora" disabled={executar.isPending}
+                  <Button variant="ghost" size="icon" aria-label="Executar agora" title="Executar agora" disabled={executar.isPending}
                     onClick={() => executar.mutate({ job_id: j.id, gatilho: "manual" })}>
                     <Play className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" title={j.ativo ? "Pausar" : "Retomar"}
+                  <Button variant="ghost" size="icon" aria-label={j.ativo ? "Pausar" : "Retomar"} title={j.ativo ? "Pausar" : "Retomar"}
                     onClick={() => salvar.mutate({ ...stripJob(j), ativo: !j.ativo })}>
                     <Timer className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" title="Editar" onClick={() => setForm(stripJob(j))}>
+                  <Button variant="ghost" size="icon" aria-label="Editar" title="Editar" onClick={() => setForm(stripJob(j))}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" title="Remover" onClick={() => excluir.mutate(j.id)}>
+                  <Button variant="ghost" size="icon" aria-label="Remover" title="Remover" onClick={() => excluir.mutate(j.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>
@@ -252,7 +252,7 @@ export function SyncTab() {
                 <TableCell className="text-sm">{r.duracao_ms ?? "—"} ms</TableCell>
                 <TableCell className="text-xs max-w-[280px] truncate">{r.mensagem}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" title="Reprocessar esta execução" disabled={!r.job_id || executar.isPending}
+                  <Button variant="ghost" size="icon" aria-label="Reprocessar esta execução" title="Reprocessar esta execução" disabled={!r.job_id || executar.isPending}
                     onClick={() => executar.mutate({ job_id: r.job_id, reprocessa_run_id: r.id, gatilho: "reprocessamento" })}>
                     <RotateCcw className="h-4 w-4" />
                   </Button>
