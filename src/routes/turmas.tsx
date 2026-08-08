@@ -7,7 +7,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/states";
 import { fetchTurmas } from "@/lib/api";
 
-export const Route = createFileRoute("/turmas")({ component: TurmasList });
+export const Route = createFileRoute("/turmas")({
+  component: TurmasList,
+  head: () => ({
+    meta: [
+      { title: "Turmas · Edu-Gov" },
+      { name: "description", content: "Turmas da rede municipal com média geral, turno e total de alunos matriculados." },
+      { property: "og:title", content: "Turmas · Edu-Gov" },
+      { property: "og:description", content: "Selecione uma turma para acessar a análise pedagógica detalhada." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 function TurmasList() {
   const { data, isLoading } = useQuery({ queryKey: ["turmas"], queryFn: () => fetchTurmas() });

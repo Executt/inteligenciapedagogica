@@ -7,7 +7,19 @@ import { Button } from "@/components/ui/button";
 import { fetchAlunos } from "@/lib/api";
 import { ChevronRight } from "lucide-react";
 
-export const Route = createFileRoute("/alunos")({ component: AlunosList });
+export const Route = createFileRoute("/alunos")({
+  component: AlunosList,
+  head: () => ({
+    meta: [
+      { title: "Dossiê do Aluno · Edu-Gov" },
+      { name: "description", content: "Lista de alunos da rede municipal com média geral, frequência e nível de risco pedagógico." },
+      { property: "og:title", content: "Dossiê do Aluno · Edu-Gov" },
+      { property: "og:description", content: "Consulte médias, frequência e risco de cada aluno da rede municipal." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 type Aluno = Awaited<ReturnType<typeof fetchAlunos>>[number];
 

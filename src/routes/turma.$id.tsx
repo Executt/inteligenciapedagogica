@@ -11,7 +11,19 @@ import { disciplinas } from "@/lib/mock-data";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 
 
-export const Route = createFileRoute("/turma/$id")({ component: TurmaView });
+export const Route = createFileRoute("/turma/$id")({
+  component: TurmaView,
+  head: () => ({
+    meta: [
+      { title: "Análise da Turma · Edu-Gov" },
+      { name: "description", content: "Mapa de calor de rendimento por disciplina e alunos que necessitam de atenção imediata." },
+      { property: "og:title", content: "Análise da Turma · Edu-Gov" },
+      { property: "og:description", content: "Rendimento por disciplina e alertas pedagógicos da turma." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
 
 function heatColor(v: number) {
   // 0-10 scale: red -> yellow -> green using primary/warning/success
