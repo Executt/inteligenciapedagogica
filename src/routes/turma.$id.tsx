@@ -83,44 +83,46 @@ function TurmaView() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-destructive" />
+            <DataTable
+              title={
+                <span className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
                   Alunos que necessitam de atenção imediata ({data!.atencaoImediata.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Aluno</TableHead><TableHead>Matrícula</TableHead>
-                      <TableHead className="text-right">Média</TableHead>
-                      <TableHead className="text-right">Frequência</TableHead>
-                      <TableHead>Risco</TableHead><TableHead></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data!.atencaoImediata.map((a) => (
-                      <TableRow key={a.id}>
-                        <TableCell className="font-medium">{a.nome}</TableCell>
-                        <TableCell className="font-mono text-xs">{a.matricula}</TableCell>
-                        <TableCell className="text-right font-mono">{a.mediaGeral}</TableCell>
-                        <TableCell className="text-right font-mono">{a.frequencia}%</TableCell>
-                        <TableCell>
-                          <Badge variant={a.risco === "alto" ? "destructive" : "secondary"}>{a.risco}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button asChild variant="ghost" size="sm">
-                            <Link to="/aluno/$id" params={{ id: a.id }}>Dossiê <ChevronRight className="h-3 w-3" /></Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                </span>
+              }
+              columns={[
+                { id: "nome", header: "Aluno", className: "font-medium", cell: (a: any) => a.nome },
+                { id: "mat", header: "Matrícula", className: "font-mono text-xs", cell: (a: any) => a.matricula },
+                { id: "media", header: "Média", align: "right", className: "font-mono", cell: (a: any) => a.mediaGeral },
+                { id: "freq", header: "Frequência", align: "right", className: "font-mono", cell: (a: any) => `${a.frequencia}%` },
+                {
+                  id: "risco",
+                  header: "Risco",
+                  cell: (a: any) => (
+                    <Badge variant={a.risco === "alto" ? "destructive" : "warning"}>{a.risco}</Badge>
+                  ),
+                },
+                {
+                  id: "acao",
+                  header: <span className="sr-only">Ações</span>,
+                  align: "right",
+                  cell: (a: any) => (
+                    <Button asChild variant="ghost" size="sm">
+                      <Link to="/aluno/$id" params={{ id: a.id }}>
+                        Dossiê <ChevronRight className="h-3 w-3" aria-hidden="true" />
+                      </Link>
+                    </Button>
+                  ),
+                },
+              ]}
+              rows={data!.atencaoImediata}
+              rowKey={(a: any) => a.id}
+              pageSize={10}
+              caption="Alunos com indicadores críticos na turma"
+              emptyTitle="Nenhum aluno em situação crítica"
+              emptyDescription="Todos os alunos desta turma estão dentro dos parâmetros esperados."
+            />
+
           </>
         )}
       </div>
