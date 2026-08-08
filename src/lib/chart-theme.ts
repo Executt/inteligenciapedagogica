@@ -13,6 +13,15 @@ export const chartPalette = [
   "var(--color-chart-5)",
 ];
 
+/**
+ * Padrão de traço por série (índice). Garante que séries em gráficos de
+ * linha permaneçam distinguíveis sem depender apenas da cor.
+ */
+export const seriesDashPatterns = ["0", "0", "6 3", "2 3", "10 4 2 4"];
+
+export const seriesDashArray = (index: number) =>
+  seriesDashPatterns[index % seriesDashPatterns.length];
+
 export const chartSeriesColor = (index: number) => chartPalette[index % chartPalette.length];
 
 /** Semantic status colors for charts (also conveyed by name/legend, never color alone). */

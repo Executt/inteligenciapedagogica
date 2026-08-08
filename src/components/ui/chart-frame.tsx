@@ -117,35 +117,35 @@ export function ChartFrame({
 
 /** ---- Primitivas temáticas (usar dentro do ChartFrame) ------------- */
 
-export const ChartGrid = (props: React.ComponentProps<typeof CartesianGrid>) => (
+export const ChartGrid = (props: Record<string, any>) => (
   <CartesianGrid {...gridProps} {...props} />
 );
 
-export const ChartXAxis = (props: React.ComponentProps<typeof XAxis>) => (
+export const ChartXAxis = (props: Record<string, any>) => (
   <XAxis {...axisProps} {...props} />
 );
 
-export const ChartYAxis = (props: React.ComponentProps<typeof YAxis>) => (
+export const ChartYAxis = (props: Record<string, any>) => (
   <YAxis {...axisProps} {...props} />
 );
 
-export const ChartTooltip = (props: React.ComponentProps<typeof Tooltip>) => (
+export const ChartTooltip = (props: Record<string, any>) => (
   <Tooltip {...tooltipProps} {...props} />
 );
 
-export const ChartLegend = (props: React.ComponentProps<typeof Legend>) => (
+export const ChartLegend = (props: Record<string, any>) => (
   <Legend {...legendProps} {...props} />
 );
 
-export const ChartPolarGrid = (props: React.ComponentProps<typeof PolarGrid>) => (
+export const ChartPolarGrid = (props: Record<string, any>) => (
   <PolarGrid {...polarGridProps} {...props} />
 );
 
-export const ChartPolarAngleAxis = (props: React.ComponentProps<typeof PolarAngleAxis>) => (
+export const ChartPolarAngleAxis = (props: Record<string, any>) => (
   <PolarAngleAxis tick={polarTickProps} {...props} />
 );
 
-export const ChartPolarRadiusAxis = (props: React.ComponentProps<typeof PolarRadiusAxis>) => (
+export const ChartPolarRadiusAxis = (props: Record<string, any>) => (
   <PolarRadiusAxis tick={{ fontSize: 9, fill: "var(--color-muted-foreground)" }} {...props} />
 );
 
