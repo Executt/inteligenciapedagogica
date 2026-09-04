@@ -53,17 +53,20 @@ const formSchema = z.object({
   aluno: z.string().min(3, "Informe o nome completo do aluno").max(120, "Nome muito longo"),
   dataIntervencao: z.date({ required_error: "Selecione a data da intervenção" }),
   tipoContato: z
-    .enum(tiposContato)
-    .or(z.literal(""))
-    .refine((v) => v !== "", { message: "Selecione o tipo de contato" }),
+    .string()
+    .refine((v) => tiposContato.includes(v as (typeof tiposContato)[number]), {
+      message: "Selecione o tipo de contato",
+    }),
   resultado: z
-    .enum(resultados)
-    .or(z.literal(""))
-    .refine((v) => v !== "", { message: "Selecione o resultado" }),
+    .string()
+    .refine((v) => resultados.includes(v as (typeof resultados)[number]), {
+      message: "Selecione o resultado",
+    }),
   categoriaCausa: z
-    .enum(categoriasCausa)
-    .or(z.literal(""))
-    .refine((v) => v !== "", { message: "Selecione a categoria da causa" }),
+    .string()
+    .refine((v) => categoriasCausa.includes(v as (typeof categoriasCausa)[number]), {
+      message: "Selecione a categoria da causa",
+    }),
   observacoes: z.string().max(2000, "Máximo de 2000 caracteres").optional(),
   proximosPassos: z.string().max(2000, "Máximo de 2000 caracteres").optional(),
   responsavel: z.string().min(2, "Informe o responsável").max(120, "Nome muito longo"),
