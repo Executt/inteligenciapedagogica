@@ -52,9 +52,18 @@ const categoriasCausa = ["Pedagógica", "Financeira", "Familiar", "Saúde", "Out
 const formSchema = z.object({
   aluno: z.string().min(3, "Informe o nome completo do aluno").max(120, "Nome muito longo"),
   dataIntervencao: z.date({ required_error: "Selecione a data da intervenção" }),
-  tipoContato: z.enum(tiposContato, { required_error: "Selecione o tipo de contato" }),
-  resultado: z.enum(resultados, { required_error: "Selecione o resultado" }),
-  categoriaCausa: z.enum(categoriasCausa, { required_error: "Selecione a categoria da causa" }),
+  tipoContato: z
+    .enum(tiposContato)
+    .or(z.literal(""))
+    .refine((v) => v !== "", { message: "Selecione o tipo de contato" }),
+  resultado: z
+    .enum(resultados)
+    .or(z.literal(""))
+    .refine((v) => v !== "", { message: "Selecione o resultado" }),
+  categoriaCausa: z
+    .enum(categoriasCausa)
+    .or(z.literal(""))
+    .refine((v) => v !== "", { message: "Selecione a categoria da causa" }),
   observacoes: z.string().max(2000, "Máximo de 2000 caracteres").optional(),
   proximosPassos: z.string().max(2000, "Máximo de 2000 caracteres").optional(),
   responsavel: z.string().min(2, "Informe o responsável").max(120, "Nome muito longo"),
@@ -65,9 +74,9 @@ type FormValues = z.infer<typeof formSchema>;
 const defaultValues: FormValues = {
   aluno: "",
   dataIntervencao: new Date(),
-  tipoContato: undefined as unknown as (typeof tiposContato)[number],
-  resultado: undefined as unknown as (typeof resultados)[number],
-  categoriaCausa: undefined as unknown as (typeof categoriasCausa)[number],
+  tipoContato: "",
+  resultado: "",
+  categoriaCausa: "",
   observacoes: "",
   proximosPassos: "",
   responsavel: "Coordenação Pedagógica",
