@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  LayoutDashboard, Building2, Upload, School, Users, User2, Sparkles, GraduationCap, Bell, Search, Brain, Settings, LogOut,
+  LayoutDashboard, Building2, Upload, School, Users, User2, Sparkles, GraduationCap, Bell, Search, Brain, Settings, LogOut, UserMinus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,7 @@ const nav = [
   { to: "/turmas", label: "Visão da Turma", icon: Users },
   { to: "/alunos", label: "Dossiê do Aluno", icon: User2 },
   { to: "/intervencao", label: "Intervenção Pedagógica", icon: Sparkles },
+  { to: "/retencao/registrar", label: "Retenção Estudantil", icon: UserMinus },
   { to: "/cortex", label: "Edu-Córtex · IA", icon: Brain },
 ];
 
