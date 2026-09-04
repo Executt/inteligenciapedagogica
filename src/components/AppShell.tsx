@@ -18,6 +18,7 @@ const nav = [
   { to: "/turmas", label: "Visão da Turma", icon: Users },
   { to: "/alunos", label: "Dossiê do Aluno", icon: User2 },
   { to: "/intervencao", label: "Intervenção Pedagógica", icon: Sparkles },
+  { to: "/retencao/registrar", label: "Retenção Estudantil", icon: UserMinus },
   { to: "/cortex", label: "Edu-Córtex · IA", icon: Brain },
 ];
 
