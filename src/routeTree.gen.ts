@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TurmasRouteImport } from './routes/turmas'
+import { Route as RetencaoRouteImport } from './routes/retencao'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as IntervencaoRouteImport } from './routes/intervencao'
 import { Route as IntegracaoRouteImport } from './routes/integracao'
@@ -20,6 +21,9 @@ import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TurmaIdRouteImport } from './routes/turma.$id'
+import { Route as RetencaoPainelRouteImport } from './routes/retencao.painel'
+import { Route as RetencaoChatRouteImport } from './routes/retencao.chat'
+import { Route as RetencaoAlunosRouteImport } from './routes/retencao.alunos'
 import { Route as AlunoIdRouteImport } from './routes/aluno.$id'
 import { Route as AuthenticatedCortexRouteImport } from './routes/_authenticated/cortex'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
@@ -28,6 +32,11 @@ import { Route as ApiPublicPulseIngestRouteImport } from './routes/api/public/pu
 const TurmasRoute = TurmasRouteImport.update({
   id: '/turmas',
   path: '/turmas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RetencaoRoute = RetencaoRouteImport.update({
+  id: '/retencao',
+  path: '/retencao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -79,6 +88,21 @@ const TurmaIdRoute = TurmaIdRouteImport.update({
   path: '/turma/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RetencaoPainelRoute = RetencaoPainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
+  getParentRoute: () => RetencaoRoute,
+} as any)
+const RetencaoChatRoute = RetencaoChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => RetencaoRoute,
+} as any)
+const RetencaoAlunosRoute = RetencaoAlunosRouteImport.update({
+  id: '/alunos',
+  path: '/alunos',
+  getParentRoute: () => RetencaoRoute,
+} as any)
 const AlunoIdRoute = AlunoIdRouteImport.update({
   id: '/aluno/$id',
   path: '/aluno/$id',
@@ -110,10 +134,14 @@ export interface FileRoutesByFullPath {
   '/integracao': typeof IntegracaoRoute
   '/intervencao': typeof IntervencaoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/retencao': typeof RetencaoRouteWithChildren
   '/turmas': typeof TurmasRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
+  '/retencao/alunos': typeof RetencaoAlunosRoute
+  '/retencao/chat': typeof RetencaoChatRoute
+  '/retencao/painel': typeof RetencaoPainelRoute
   '/turma/$id': typeof TurmaIdRoute
   '/api/public/pulse/ingest': typeof ApiPublicPulseIngestRoute
 }
@@ -126,10 +154,14 @@ export interface FileRoutesByTo {
   '/integracao': typeof IntegracaoRoute
   '/intervencao': typeof IntervencaoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/retencao': typeof RetencaoRouteWithChildren
   '/turmas': typeof TurmasRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
+  '/retencao/alunos': typeof RetencaoAlunosRoute
+  '/retencao/chat': typeof RetencaoChatRoute
+  '/retencao/painel': typeof RetencaoPainelRoute
   '/turma/$id': typeof TurmaIdRoute
   '/api/public/pulse/ingest': typeof ApiPublicPulseIngestRoute
 }
@@ -144,10 +176,14 @@ export interface FileRoutesById {
   '/integracao': typeof IntegracaoRoute
   '/intervencao': typeof IntervencaoRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/retencao': typeof RetencaoRouteWithChildren
   '/turmas': typeof TurmasRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/cortex': typeof AuthenticatedCortexRoute
   '/aluno/$id': typeof AlunoIdRoute
+  '/retencao/alunos': typeof RetencaoAlunosRoute
+  '/retencao/chat': typeof RetencaoChatRoute
+  '/retencao/painel': typeof RetencaoPainelRoute
   '/turma/$id': typeof TurmaIdRoute
   '/api/public/pulse/ingest': typeof ApiPublicPulseIngestRoute
 }
@@ -162,10 +198,14 @@ export interface FileRouteTypes {
     | '/integracao'
     | '/intervencao'
     | '/reset-password'
+    | '/retencao'
     | '/turmas'
     | '/configuracoes'
     | '/cortex'
     | '/aluno/$id'
+    | '/retencao/alunos'
+    | '/retencao/chat'
+    | '/retencao/painel'
     | '/turma/$id'
     | '/api/public/pulse/ingest'
   fileRoutesByTo: FileRoutesByTo
@@ -178,10 +218,14 @@ export interface FileRouteTypes {
     | '/integracao'
     | '/intervencao'
     | '/reset-password'
+    | '/retencao'
     | '/turmas'
     | '/configuracoes'
     | '/cortex'
     | '/aluno/$id'
+    | '/retencao/alunos'
+    | '/retencao/chat'
+    | '/retencao/painel'
     | '/turma/$id'
     | '/api/public/pulse/ingest'
   id:
@@ -195,10 +239,14 @@ export interface FileRouteTypes {
     | '/integracao'
     | '/intervencao'
     | '/reset-password'
+    | '/retencao'
     | '/turmas'
     | '/_authenticated/configuracoes'
     | '/_authenticated/cortex'
     | '/aluno/$id'
+    | '/retencao/alunos'
+    | '/retencao/chat'
+    | '/retencao/painel'
     | '/turma/$id'
     | '/api/public/pulse/ingest'
   fileRoutesById: FileRoutesById
@@ -213,6 +261,7 @@ export interface RootRouteChildren {
   IntegracaoRoute: typeof IntegracaoRoute
   IntervencaoRoute: typeof IntervencaoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RetencaoRoute: typeof RetencaoRouteWithChildren
   TurmasRoute: typeof TurmasRoute
   AlunoIdRoute: typeof AlunoIdRoute
   TurmaIdRoute: typeof TurmaIdRoute
@@ -226,6 +275,13 @@ declare module '@tanstack/react-router' {
       path: '/turmas'
       fullPath: '/turmas'
       preLoaderRoute: typeof TurmasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/retencao': {
+      id: '/retencao'
+      path: '/retencao'
+      fullPath: '/retencao'
+      preLoaderRoute: typeof RetencaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -298,6 +354,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TurmaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/retencao/painel': {
+      id: '/retencao/painel'
+      path: '/painel'
+      fullPath: '/retencao/painel'
+      preLoaderRoute: typeof RetencaoPainelRouteImport
+      parentRoute: typeof RetencaoRoute
+    }
+    '/retencao/chat': {
+      id: '/retencao/chat'
+      path: '/chat'
+      fullPath: '/retencao/chat'
+      preLoaderRoute: typeof RetencaoChatRouteImport
+      parentRoute: typeof RetencaoRoute
+    }
+    '/retencao/alunos': {
+      id: '/retencao/alunos'
+      path: '/alunos'
+      fullPath: '/retencao/alunos'
+      preLoaderRoute: typeof RetencaoAlunosRouteImport
+      parentRoute: typeof RetencaoRoute
+    }
     '/aluno/$id': {
       id: '/aluno/$id'
       path: '/aluno/$id'
@@ -342,6 +419,22 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface RetencaoRouteChildren {
+  RetencaoAlunosRoute: typeof RetencaoAlunosRoute
+  RetencaoChatRoute: typeof RetencaoChatRoute
+  RetencaoPainelRoute: typeof RetencaoPainelRoute
+}
+
+const RetencaoRouteChildren: RetencaoRouteChildren = {
+  RetencaoAlunosRoute: RetencaoAlunosRoute,
+  RetencaoChatRoute: RetencaoChatRoute,
+  RetencaoPainelRoute: RetencaoPainelRoute,
+}
+
+const RetencaoRouteWithChildren = RetencaoRoute._addFileChildren(
+  RetencaoRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -352,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntegracaoRoute: IntegracaoRoute,
   IntervencaoRoute: IntervencaoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RetencaoRoute: RetencaoRouteWithChildren,
   TurmasRoute: TurmasRoute,
   AlunoIdRoute: AlunoIdRoute,
   TurmaIdRoute: TurmaIdRoute,
