@@ -29,13 +29,13 @@ function RetencaoLayout() {
 
   return (
     <AppShell>
-      <div className="p-8 max-w-[1400px] mx-auto">
+      <div className="w-full min-w-0 p-4 md:p-8 max-w-[1400px] mx-auto">
         <PageHeader
           title="Retenção Estudantil"
           subtitle="Acompanhamento de indicadores e intervenções para reduzir a evasão escolar."
         />
-        <Tabs value={pathname}>
-          <TabsList className="mb-6">
+        <Tabs value={pathname} className="w-full min-w-0">
+          <TabsList className="mb-6 flex-wrap h-auto">
             {tabs.map((t) => (
               <TabsTrigger
                 key={t.to}
