@@ -7,8 +7,30 @@ import {
   embedTexts,
   requireLovableApiKey,
 } from "@/lib/ai-gateway.server";
-import { rotearIngestao, rotearAnaliseFinal, detectarTipo } from "./router";
+import {
+  rotearIngestao,
+  rotearAnaliseFinal,
+  detectarTipo,
+  formatoAudio,
+  type ConfigModelos,
+} from "./router";
 import { chunkText } from "./chunk";
+
+/** Lê a configuração de modelos por tipo de arquivo salva em app_settings. */
+async function carregarConfigModelos(): Promise<ConfigModelos> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("app_settings")
+      .select("valor")
+      .eq("chave", "cortex.modelos")
+      .maybeSingle();
+    return ((data?.valor as ConfigModelos | null) ?? {}) as ConfigModelos;
+  } catch {
+    return {};
+  }
+}
+
 
 // ============ Uploads ============
 export const criarUploadUrl = createServerFn({ method: "POST" })
@@ -49,6 +71,8 @@ const IngestInput = z.object({
   mime: z.string(),
   tamanho: z.number(),
   sensivel: z.boolean().default(false),
+  /** Modelo escolhido manualmente no upload (sobrepõe a configuração por tipo). */
+  modelo: z.string().min(1).optional(),
 });
 
 export const ingestDocumento = createServerFn({ method: "POST" })
@@ -57,11 +81,15 @@ export const ingestDocumento = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const tipo = detectarTipo(data.mime);
+    const config = await carregarConfigModelos();
     const rota = rotearIngestao({
       mime: data.mime,
       tamanhoBytes: data.tamanho,
       sensivel: data.sensivel,
+      config,
+      modeloManual: data.modelo,
     });
+
 
     // Cria registro
     const { data: doc, error: insErr } = await context.supabase
@@ -95,17 +123,26 @@ export const ingestDocumento = createServerFn({ method: "POST" })
       if (tipo === "texto" || tipo === "planilha") {
         textoExtraido = await blob.text();
       } else {
-        // imagem/pdf → gemini multimodal
+        // imagem / pdf / áudio → modelo multimodal definido pelo roteador
         const key = requireLovableApiKey();
         const ab = await blob.arrayBuffer();
         const b64 = Buffer.from(ab).toString("base64");
         const contentBlock =
           tipo === "imagem"
             ? { type: "image_url" as const, image_url: { url: `data:${data.mime};base64,${b64}` } }
-            : {
-                type: "file" as const,
-                file: { filename: data.nome, file_data: `data:${data.mime};base64,${b64}` },
-              };
+            : tipo === "audio"
+              ? {
+                  type: "input_audio" as const,
+                  input_audio: { data: b64, format: formatoAudio(data.mime, data.nome) },
+                }
+              : {
+                  type: "file" as const,
+                  file: { filename: data.nome, file_data: `data:${data.mime};base64,${b64}` },
+                };
+        const instrucao =
+          tipo === "audio"
+            ? "Transcreva integralmente este áudio educacional em português do Brasil. Identifique os falantes quando possível (ex: Professor, Aluno, Responsável), preserve a ordem da conversa e registre entre colchetes observações relevantes de tom emocional. Retorne apenas a transcrição."
+            : "Transcreva integralmente o conteúdo deste documento educacional em português. Preserve estrutura (títulos, listas, tabelas se houver). Se for prova manuscrita, transcreva as respostas do aluno e observações. Retorne apenas o texto transcrito.";
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -117,18 +154,13 @@ export const ingestDocumento = createServerFn({ method: "POST" })
             messages: [
               {
                 role: "user",
-                content: [
-                  {
-                    type: "text",
-                    text: "Transcreva integralmente o conteúdo deste documento educacional em português. Preserve estrutura (títulos, listas, tabelas se houver). Se for prova manuscrita, transcreva as respostas do aluno e observações. Retorne apenas o texto transcrito.",
-                  },
-                  contentBlock,
-                ],
+                content: [{ type: "text", text: instrucao }, contentBlock],
               },
             ],
           }),
         });
         if (!res.ok) throw new Error(`OCR/extração falhou [${res.status}]: ${await res.text()}`);
+
         const j = (await res.json()) as {
           choices: { message: { content: string } }[];
         };
@@ -302,7 +334,7 @@ export const gerarAnaliseCortex = createServerFn({ method: "POST" })
       : "(sem documentos ingeridos)";
 
     // 3. Modelo premium
-    const rota = rotearAnaliseFinal(data.publico);
+    const rota = rotearAnaliseFinal(data.publico, await carregarConfigModelos());
     const provider = createLovableAiGatewayProvider(requireLovableApiKey());
     const model = provider(rota.modelo);
 
