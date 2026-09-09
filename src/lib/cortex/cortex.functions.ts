@@ -123,17 +123,26 @@ export const ingestDocumento = createServerFn({ method: "POST" })
       if (tipo === "texto" || tipo === "planilha") {
         textoExtraido = await blob.text();
       } else {
-        // imagem/pdf → gemini multimodal
+        // imagem / pdf / áudio → modelo multimodal definido pelo roteador
         const key = requireLovableApiKey();
         const ab = await blob.arrayBuffer();
         const b64 = Buffer.from(ab).toString("base64");
         const contentBlock =
           tipo === "imagem"
             ? { type: "image_url" as const, image_url: { url: `data:${data.mime};base64,${b64}` } }
-            : {
-                type: "file" as const,
-                file: { filename: data.nome, file_data: `data:${data.mime};base64,${b64}` },
-              };
+            : tipo === "audio"
+              ? {
+                  type: "input_audio" as const,
+                  input_audio: { data: b64, format: formatoAudio(data.mime, data.nome) },
+                }
+              : {
+                  type: "file" as const,
+                  file: { filename: data.nome, file_data: `data:${data.mime};base64,${b64}` },
+                };
+        const instrucao =
+          tipo === "audio"
+            ? "Transcreva integralmente este áudio educacional em português do Brasil. Identifique os falantes quando possível (ex: Professor, Aluno, Responsável), preserve a ordem da conversa e registre entre colchetes observações relevantes de tom emocional. Retorne apenas a transcrição."
+            : "Transcreva integralmente o conteúdo deste documento educacional em português. Preserve estrutura (títulos, listas, tabelas se houver). Se for prova manuscrita, transcreva as respostas do aluno e observações. Retorne apenas o texto transcrito.";
         const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -145,18 +154,13 @@ export const ingestDocumento = createServerFn({ method: "POST" })
             messages: [
               {
                 role: "user",
-                content: [
-                  {
-                    type: "text",
-                    text: "Transcreva integralmente o conteúdo deste documento educacional em português. Preserve estrutura (títulos, listas, tabelas se houver). Se for prova manuscrita, transcreva as respostas do aluno e observações. Retorne apenas o texto transcrito.",
-                  },
-                  contentBlock,
-                ],
+                content: [{ type: "text", text: instrucao }, contentBlock],
               },
             ],
           }),
         });
         if (!res.ok) throw new Error(`OCR/extração falhou [${res.status}]: ${await res.text()}`);
+
         const j = (await res.json()) as {
           choices: { message: { content: string } }[];
         };
