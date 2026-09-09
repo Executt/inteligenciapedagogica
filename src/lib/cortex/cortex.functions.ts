@@ -7,8 +7,30 @@ import {
   embedTexts,
   requireLovableApiKey,
 } from "@/lib/ai-gateway.server";
-import { rotearIngestao, rotearAnaliseFinal, detectarTipo } from "./router";
+import {
+  rotearIngestao,
+  rotearAnaliseFinal,
+  detectarTipo,
+  formatoAudio,
+  type ConfigModelos,
+} from "./router";
 import { chunkText } from "./chunk";
+
+/** Lê a configuração de modelos por tipo de arquivo salva em app_settings. */
+async function carregarConfigModelos(): Promise<ConfigModelos> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("app_settings")
+      .select("valor")
+      .eq("chave", "cortex.modelos")
+      .maybeSingle();
+    return ((data?.valor as ConfigModelos | null) ?? {}) as ConfigModelos;
+  } catch {
+    return {};
+  }
+}
+
 
 // ============ Uploads ============
 export const criarUploadUrl = createServerFn({ method: "POST" })
