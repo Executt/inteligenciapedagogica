@@ -71,6 +71,8 @@ const IngestInput = z.object({
   mime: z.string(),
   tamanho: z.number(),
   sensivel: z.boolean().default(false),
+  /** Modelo escolhido manualmente no upload (sobrepõe a configuração por tipo). */
+  modelo: z.string().min(1).optional(),
 });
 
 export const ingestDocumento = createServerFn({ method: "POST" })
@@ -79,11 +81,15 @@ export const ingestDocumento = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const tipo = detectarTipo(data.mime);
+    const config = await carregarConfigModelos();
     const rota = rotearIngestao({
       mime: data.mime,
       tamanhoBytes: data.tamanho,
       sensivel: data.sensivel,
+      config,
+      modeloManual: data.modelo,
     });
+
 
     // Cria registro
     const { data: doc, error: insErr } = await context.supabase
