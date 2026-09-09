@@ -334,7 +334,7 @@ export const gerarAnaliseCortex = createServerFn({ method: "POST" })
       : "(sem documentos ingeridos)";
 
     // 3. Modelo premium
-    const rota = rotearAnaliseFinal(data.publico);
+    const rota = rotearAnaliseFinal(data.publico, await carregarConfigModelos());
     const provider = createLovableAiGatewayProvider(requireLovableApiKey());
     const model = provider(rota.modelo);
 
