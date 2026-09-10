@@ -3,9 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  Upload, FileText, Image as ImageIcon, FileSpreadsheet, Trash2, Sparkles,
+  Upload, FileText, Image as ImageIcon, FileSpreadsheet, FileAudio, Trash2, Sparkles,
   ShieldAlert, Cpu, Loader2, ChevronDown, ChevronRight, Brain, CheckCircle2, XCircle,
 } from "lucide-react";
+import { MODELOS_POR_TIPO } from "@/lib/cortex/router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
