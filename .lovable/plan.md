@@ -1,105 +1,52 @@
-# Evolução Edu-Gov — Plataforma em 5 Camadas
+# Retenção por escola + conectores de RH e Matrículas
 
-Objetivo: evoluir a plataforma preservando 100% do que existe. Nada é recriado ou removido.
-O usuário Root (`superadmin@edugov.gov.br`) permanece intacto: credenciais, papéis, políticas e autenticação inalteradas.
+Quatro entregas ligadas entre si: intervenções passam a ser dados reais do banco, alimentam o Painel de Indicadores, ganham uma visão por unidade escolar e aparecem no dossiê do aluno. Em paralelo, dois conectores oficiais (RH e Matrículas) trazem servidores, alunos, turmas e frequência para a plataforma pelo barramento de eventos.
 
-## Separação arquitetural
+## 1. Intervenções como dado real
 
-```text
-   Administration  (/configuracoes — já existe, ganha novas abas)
-   ------------------------------------------------------------
-   Analytics       (indicadores executivos, risco, frequência)
-   AI Services     (já existe: ai-gateway + cortex router + RAG)
-   Integration Hub (NOVO: connectors, adapters, bus, workflows, mapping, gateway)
-   Core Platform   (Master Data oficial: escolas, turmas, alunos, servidores)
-```
+- Nova tabela de intervenções ligada ao aluno e à unidade escolar, com data, tipo de contato, resultado, categoria da causa, observações, próximos passos e responsável (usuário logado).
+- Tela "Registrar Intervenção" deixa de ser simulada: o campo Aluno passa a buscar alunos reais da rede (nome/matrícula) e o registro é gravado no banco, com mensagem de sucesso e limpeza do formulário como hoje.
+- Acesso: cada profissional vê e registra intervenções das unidades a que está vinculado; direção e administração veem a rede toda.
 
-Regra: módulos não se falam direto — publicam/consomem eventos no barramento. Nenhum sistema externo toca o banco: só via Integration Hub.
+## 2. Painel de Indicadores com dados reais
 
----
+- Indicadores (intervenções no mês, alunos em risco, efetividade, taxa de evasão) calculados a partir das intervenções, matrículas e frequência gravadas.
+- Gráficos de causas, canais de contato e evolução mensal passam a refletir os registros reais; quando ainda não houver dados, aparece o estado vazio padrão da aplicação em vez de números fictícios.
+- O gráfico por escola fica clicável e leva à nova tela da unidade.
 
-## Fase 1 — Fundação arquitetural e governança
+## 3. Tela de retenção por escola
 
-- Documentar as 5 camadas em `docs/arquitetura-5-camadas.md` + diagrama Mermaid atualizado em `docs/arquitetura-e-tech-stack.md`.
-- Criar `docs/relatorio-de-impacto.md` (registro incremental de cada fase).
-- Criar contrato de camadas em `src/lib/platform/` (tipos de evento, contratos de conector, contrato do AI Service).
-- Sem migration. Sem risco funcional.
-- Aceite: docs publicadas e tipos compilando (`tsgo`).
-- Rollback: reverter arquivos de docs/tipos (não há dependência em runtime ainda).
+- Nova aba "Por Escola" com lista das 91 unidades e seus números de retenção; ao escolher uma unidade, abre a visão detalhada:
+  - resumo da unidade (alunos, alunos em risco, frequência média, intervenções no período);
+  - intervenções da unidade em tabela com filtros por período, resultado e causa;
+  - distribuição das causas e efetividade por canal de contato e por responsável;
+  - lista dos alunos em risco da unidade com atalho para o dossiê e para registrar intervenção.
 
-## Fase 2 — Core Platform (Master Data)
+## 4. Intervenções no dossiê do aluno
 
-Hoje escolas/turmas/alunos vêm de mock (`src/lib/api.ts` + `mock-data.ts`). Passam a ter tabelas oficiais.
+- Nova seção no dossiê listando o histórico de intervenções do aluno (data, canal, resultado, causa, responsável, próximos passos) e um atalho para registrar nova intervenção já com o aluno preenchido.
+- O Edu-Córtex passa a considerar esse histórico como fonte adicional na análise socioemocional.
 
-- Migration incremental (apenas CREATE): `escolas`, `turmas`, `alunos`, `servidores`, `matriculas`, `vinculos_servidor` (unidade + disciplina, reaproveitando o modelo já usado no ProfissionaisPanel).
-- GRANTs explícitos + RLS por papel via `has_role()`; nenhuma política existente é alterada.
-- `src/lib/api.ts` mantém a mesma assinatura pública: passa a ler do banco com fallback para mock quando vazio, para as telas continuarem renderizando desde o primeiro acesso.
-- Server functions em `src/lib/core/*.functions.ts` (CRUD autenticado).
-- Aceite: `/escola`, `/turmas`, `/alunos`, `/entidades`, `/aluno/$id` funcionam sem regressão; dados persistem.
-- Riscos: divergência mock/real. Mitigação: fallback e contrato de tipos único.
-- Rollback: flag de leitura volta ao mock; tabelas permanecem sem uso.
+## 5. Conector do sistema de RH da Secretaria
 
-## Fase 3 — Integration Hub
+- Conector no Integration Hub com dois agregados novos: servidor (matrícula, nome, cargo, situação, contato) e lotação (servidor + unidade escolar + carga horária + disciplina).
+- Mapeamentos prontos para os campos habituais de folha/RH, deduplicação por matrícula, validação de vínculo com unidade existente.
+- Sincronização publica eventos no barramento; um consumidor grava/atualiza servidores e lotações nas tabelas oficiais, registrando inconsistências quando a unidade não existe.
+- Agendamento, histórico de execuções, logs e teste de conexão reaproveitam o que já existe no Hub.
 
-- Migration: `integracao_conectores` (id, nome, descrição, tipo, status, versão, auth, parâmetros), `integracao_execucoes`, `integracao_eventos`, `integracao_fluxos`, `integracao_mapeamentos`, `integracao_logs`.
-- **Adapters** em `src/lib/hub/adapters/` com interface única (`testar`, `listar`, `ler`, `escrever`): REST, GraphQL, SOAP, PostgreSQL, SQL Server, Oracle, MySQL, MariaDB, SQLite, MongoDB, LDAP, AD, OpenLDAP, CSV, Excel, XML, JSON, SFTP. Adapters sem suporte no runtime edge são registrados com status "requer agente" e proxy HTTP, sem quebrar o núcleo.
-- **Barramento de eventos** interno persistido (`integracao_eventos`): `StudentCreated/Updated/Transferred`, `SchoolCreated`, `TeacherCreated`, `AttendanceImported`, `GradeUpdated`, `CouncilMeetingCreated`. Interface `publish/subscribe` preparada para RabbitMQ/Kafka.
-- **Workflow Engine**: origem → transformações → validações → destino, com política de sincronização e de conflito, retentativa exponencial, auditoria em `audit_logs`.
-- **Data Mapping visual**: UI de mapeamento campo-a-campo (concatenar, dividir, converter tipo, expressão, valor padrão, validação) sem código.
-- **API Gateway interno** `/api/v1/*`: autenticação, autorização por papel, rate limiting, versionamento, cache, auditoria e OpenAPI. Estrutura já preparada para `/api/v2`. O endpoint Pulse atual continua funcionando sem alteração.
-- **Painel de monitoramento**: integrações ativas/falhas, tempo médio, volume, filas, taxa de sucesso/erro, histórico.
-- Nova rota `/_authenticated/hub` + abas no módulo de configuração.
-- Aceite: criar um conector REST, mapear campos, rodar fluxo, ver evento no barramento e execução no painel.
-- Riscos: limites do runtime para drivers de banco. Mitigação: modo agente/proxy.
-- Rollback: desabilitar conectores (status inativo); rotas do Hub isoladas do restante.
+## 6. Conector do sistema de Matrículas da Secretaria
 
-## Fase 4 — Autenticação estendida e Segurança
-
-- Coexistência: Root inalterado. Novo campo `auth_origin` em `profiles` (`ROOT | LOCAL | LDAP | AD | OAUTH`), default `LOCAL`; Root marcado `ROOT` sem tocar credenciais/papéis.
-- Tabelas: `auth_provedores` (LDAP/AD/OpenLDAP/OAuth2), `auth_grupo_papel` (mapeia grupo do diretório → `app_role`), `auth_sync_execucoes`, `auth_sessoes`.
-- Sincronização LDAP/AD: usuários, grupos, OUs, departamentos, e-mails, telefones; manual, agendada e incremental.
-- Segurança: RBAC por permissão sobre `user_roles`, MFA (TOTP) para usuários locais, criptografia de credenciais de conector via secret manager, expiração de token configurável, logs de autenticação e de integração, trilha por usuário.
-- OAuth2 apenas estruturado (sem provider ativo).
-- Aceite: login Root inalterado; provedor LDAP configurável e sincronização registrada; MFA opcional funcional.
-- Riscos: bloqueio de acesso. Mitigação: MFA opt-in; Root nunca sujeito a novas regras.
-- Rollback: desativar provedor; `auth_origin` é aditivo.
-
-## Fase 5 — Importação das unidades escolares
-
-- Requer o PDF oficial da rede municipal (não está anexado — precisa ser reenviado).
-- Importador inteligente: extração do PDF, normalização, deduplicação, validação de endereço, criação de registros completos em `escolas` e fila de inconsistências para revisão manual.
-- Reaproveita adapters/workflow da Fase 3 para futuras sincronizações automáticas.
-- Aceite: escolas importadas conferem com o PDF; inconsistências listadas.
-- Rollback: importação por lote identificável e reversível.
-
-## Fase 6 — AI Services (ampliação) e Conselho Pedagógico
-
-- Formalizar `src/lib/ai/service.ts` como única porta de IA (providers intercambiáveis: Lovable AI, OpenAI, Azure, Anthropic, Gemini, local). Nenhum componente conhece o modelo.
-- Capacidades: análise pedagógica (já existe), risco de evasão, análise de frequência, resumo de reuniões, geração de atas, recomendações de intervenção, apoio ao Conselho Pedagógico, indicadores executivos.
-- Tabelas: `conselho_reunioes`, `conselho_atas`, `conselho_participantes`, `risco_evasao`; evento `CouncilMeetingCreated`.
-- Rota `/_authenticated/conselho`.
-- Aceite: reunião registrada, ata gerada, risco calculado por aluno/turma.
-- Rollback: rotas novas removíveis; Córtex atual intocado.
-
-## Fase 7 — Analytics
-
-- Indicadores executivos consolidados (rede, escola, turma) a partir do Core + eventos; sem duplicar dados.
-- Painel executivo reaproveitando os componentes Recharts existentes.
-- Aceite: indicadores coerentes com o Core; sem regressão nos dashboards atuais.
-
----
-
-## Dependências
-
-Fase 1 → 2 → 3 → (4, 5, 6) → 7. Fase 5 depende de 3 e do PDF. Fase 6 depende de 2.
+- Conector com os agregados aluno, turma, matrícula e frequência.
+- Consumidores do barramento materializam: alunos, turmas por unidade/ano letivo/turno, matrículas (aluno + turma) e frequência mensal por aluno.
+- Deduplicação por código do aluno e código da turma; transferências entre unidades atualizam a matrícula em vez de duplicar o aluno.
+- A frequência importada alimenta diretamente o cálculo de alunos em risco da Retenção Estudantil.
 
 ## Detalhes técnicos
 
-- Migrations sempre aditivas: `CREATE TABLE` + `GRANT` + `ENABLE RLS` + `CREATE POLICY`. Nenhum `DROP`/`ALTER` em tabelas, políticas, funções ou usuários existentes.
-- Server logic em `createServerFn` (`*.functions.ts`); chamadas externas em `src/routes/api/v1/*` e `api/public/*` com verificação de assinatura.
-- Reuso obrigatório: `AppShell`, painéis de `src/components/config`, `SettingsForm`, `app_settings`, `audit_logs`, `has_role()`, `ai-gateway.server.ts`, `cortex/router.ts`.
-- Documentação atualizada em `/docs` a cada fase, com relatório de impacto e diagrama.
-
-## Próximo passo
-
-Aprovando, começo pelas Fases 1 e 2 (fundação + Core Platform), pois todo o resto depende do Master Data oficial.
+- Migrações: tabelas `intervencoes` e `frequencias`; índices por aluno, escola e data; GRANTs e políticas RLS por papel; triggers de `updated_at`.
+- Contratos do Hub estendidos: agregados `teacher`, `staff_assignment`, `class`, `enrollment`, `attendance` em `src/lib/hub/mapping.ts`, com eventos correspondentes em `src/lib/hub/events.ts` (`TeacherCreated`, `StaffAssignmentUpdated`, `ClassCreated`, `EnrollmentUpdated`, `AttendanceImported`).
+- Novo consumidor `src/lib/hub/consumers.functions.ts`: lê `hub_events` pendentes, aplica upsert idempotente nas tabelas do Core Platform, grava `hub_event_deliveries` e `importacao_inconsistencias`.
+- Presets de conector em `src/lib/hub/presets.ts` (RH e Matrículas) com adaptador REST padrão, parâmetros e mapeamentos sugeridos, criados a partir de um botão "Usar modelo" no Integration Hub.
+- Server functions novas: `src/lib/retencao/intervencoes.functions.ts` (criar, listar por aluno/escola, buscar alunos) e `src/lib/retencao/indicadores.functions.ts` (KPIs, séries, causas, canais, ranking por escola).
+- Rotas novas: `src/routes/retencao.escolas.tsx` e `src/routes/retencao.escola.$id.tsx`, seguindo `ChartFrame`, `DataTable`, tokens Horizon e `head()` próprio.
+- `src/lib/retencao-data.ts` deixa de alimentar as telas e fica apenas como referência de tipos/estado vazio.
