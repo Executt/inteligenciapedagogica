@@ -43,6 +43,7 @@ export function UploadZone({ alunoId }: { alunoId: string }) {
   const qc = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [sensivel, setSensivel] = useState(false);
+  const [modelo, setModelo] = useState<string>("auto");
   const [feed, setFeed] = useState<FeedEntry[]>([]);
   const criarUp = useServerFn(criarUploadUrl);
   const ingest = useServerFn(ingestDocumento);
