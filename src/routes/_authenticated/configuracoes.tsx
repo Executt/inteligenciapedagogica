@@ -20,9 +20,10 @@ import { DisciplinasPanel } from "@/components/config/DisciplinasPanel";
 import { ComunicacaoPanel } from "@/components/config/ComunicacaoPanel";
 import { IntegrationHubPanel } from "@/components/config/IntegrationHubPanel";
 import { IntegracaoPulsePanel } from "@/components/config/IntegracaoPulsePanel";
+import { ModelosPorTipoPanel } from "@/components/config/ModelosPorTipoPanel";
 import {
   Users, ScrollText, BrainCircuit, Cpu, Database, Package, Sparkles, Mail, MessageSquare, Phone, BookOpen,
-  Building2, Bot, GraduationCap, Webhook, School, Plug,
+  Building2, Bot, GraduationCap, Webhook, School, Plug, FileAudio,
 } from "lucide-react";
 
 type TabDef = { id: string; label: string; icon: any; group: string };
@@ -37,6 +38,7 @@ const TABS: TabDef[] = [
   { id: "disciplinas", label: "Disciplinas & Materiais", icon: BookOpen, group: "Gestão Institucional" },
 
   { id: "cortex", label: "Roteamento do Córtex", icon: Sparkles, group: "Orquestração de IA" },
+  { id: "modelos-tipo", label: "Modelo por Tipo de Arquivo", icon: FileAudio, group: "Orquestração de IA" },
   { id: "ia-oss", label: "Modelos Open Source", icon: Cpu, group: "Orquestração de IA" },
   { id: "ia-pagas", label: "Modelos Pagos", icon: BrainCircuit, group: "Orquestração de IA" },
   { id: "assistente", label: "Assistente do Educador", icon: Bot, group: "Orquestração de IA" },
@@ -124,6 +126,7 @@ function ConfiguracoesPage() {
             {active === "profissionais" && <ProfissionaisPanel />}
             {active === "disciplinas" && <DisciplinasPanel />}
             {active === "cortex" && <CortexRoutingPanel />}
+            {active === "modelos-tipo" && <ModelosPorTipoPanel />}
             {active === "ia-oss" && <ModelosIAPanel categoria="oss" />}
             {active === "ia-pagas" && <ModelosIAPanel categoria="paga" />}
             {active === "assistente" && <AssistentePanel />}

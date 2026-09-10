@@ -3,9 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  Upload, FileText, Image as ImageIcon, FileSpreadsheet, Trash2, Sparkles,
+  Upload, FileText, Image as ImageIcon, FileSpreadsheet, FileAudio, Trash2, Sparkles,
   ShieldAlert, Cpu, Loader2, ChevronDown, ChevronRight, Brain, CheckCircle2, XCircle,
 } from "lucide-react";
+import { MODELOS_POR_TIPO } from "@/lib/cortex/router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,10 +40,13 @@ function emitFeed(e: FeedEntry) {
   feedBus.dispatchEvent(new CustomEvent("feed", { detail: e }));
 }
 
+const MODELOS_UPLOAD = Array.from(new Set(Object.values(MODELOS_POR_TIPO).flat()));
+
 export function UploadZone({ alunoId }: { alunoId: string }) {
   const qc = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [sensivel, setSensivel] = useState(false);
+  const [modelo, setModelo] = useState<string>("auto");
   const [feed, setFeed] = useState<FeedEntry[]>([]);
   const criarUp = useServerFn(criarUploadUrl);
   const ingest = useServerFn(ingestDocumento);
@@ -60,7 +64,11 @@ export function UploadZone({ alunoId }: { alunoId: string }) {
       if (error) throw new Error(error.message);
       pushFeed({ nome: file.name, etapa: "ROTEAMENTO", ts: Date.now() });
       const res = await ingest({
-        data: { alunoId, storagePath: path, nome: file.name, mime: file.type || "application/octet-stream", tamanho: file.size, sensivel },
+        data: {
+          alunoId, storagePath: path, nome: file.name,
+          mime: file.type || "application/octet-stream", tamanho: file.size, sensivel,
+          ...(modelo !== "auto" ? { modelo } : {}),
+        },
       });
       pushFeed({ nome: file.name, etapa: "OK", ts: Date.now() });
       return res;
@@ -88,7 +96,7 @@ export function UploadZone({ alunoId }: { alunoId: string }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Upload className="h-4 w-4" /> Ingestão multimodal (imagens · PDFs · textos · planilhas)
+          <Upload className="h-4 w-4" /> Ingestão multimodal (áudios · imagens · PDFs · textos · planilhas)
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -104,14 +112,32 @@ export function UploadZone({ alunoId }: { alunoId: string }) {
           <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
           <div className="text-sm font-medium">Arraste arquivos ou clique para selecionar</div>
           <div className="text-xs text-muted-foreground mt-1">
-            Provas manuscritas, laudos, relatos docentes, redações, planilhas — o roteador decide o pipeline.
+            Áudios de reunião ou relato falado, provas manuscritas, laudos, redações, planilhas — o roteador decide o pipeline.
           </div>
           <input
             ref={inputRef} type="file" className="hidden" multiple
-            accept="image/*,application/pdf,text/*,.csv,.xlsx"
+            accept="audio/*,image/*,application/pdf,text/*,.csv,.xlsx,.mp3,.wav,.m4a,.ogg,.webm,.aac,.flac"
             onChange={(e) => { Array.from(e.target.files ?? []).forEach((f) => upload.mutate(f)); e.target.value = ""; }}
           />
         </div>
+
+        <div className="flex flex-col md:flex-row md:items-center gap-3 mt-4">
+          <Label htmlFor="modelo-upload" className="text-xs flex-1">
+            Modelo de IA para este envio — em “Automático”, cada arquivo usa o modelo definido nas configurações para o seu tipo.
+          </Label>
+          <Select value={modelo} onValueChange={setModelo}>
+            <SelectTrigger id="modelo-upload" className="w-full md:w-[300px]" aria-label="Modelo de IA para este envio">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Automático (por tipo de arquivo)</SelectItem>
+              {MODELOS_UPLOAD.map((m) => (
+                <SelectItem key={m} value={m}>{m}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
 
         <div className="flex items-center gap-3 mt-4 p-3 rounded-md bg-muted/40">
           <ShieldAlert className="h-4 w-4 text-amber-600" />
@@ -147,7 +173,7 @@ export function UploadZone({ alunoId }: { alunoId: string }) {
   );
 }
 
-const iconTipo = { imagem: ImageIcon, pdf: FileText, texto: FileText, planilha: FileSpreadsheet } as const;
+const iconTipo = { imagem: ImageIcon, pdf: FileText, texto: FileText, planilha: FileSpreadsheet, audio: FileAudio } as const;
 
 export function DocumentosList({ alunoId }: { alunoId: string }) {
   const qc = useQueryClient();
