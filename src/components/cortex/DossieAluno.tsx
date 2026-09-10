@@ -40,6 +40,8 @@ function emitFeed(e: FeedEntry) {
   feedBus.dispatchEvent(new CustomEvent("feed", { detail: e }));
 }
 
+const MODELOS_UPLOAD = Array.from(new Set(Object.values(MODELOS_POR_TIPO).flat()));
+
 export function UploadZone({ alunoId }: { alunoId: string }) {
   const qc = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -171,7 +173,7 @@ export function UploadZone({ alunoId }: { alunoId: string }) {
   );
 }
 
-const iconTipo = { imagem: ImageIcon, pdf: FileText, texto: FileText, planilha: FileSpreadsheet } as const;
+const iconTipo = { imagem: ImageIcon, pdf: FileText, texto: FileText, planilha: FileSpreadsheet, audio: FileAudio } as const;
 
 export function DocumentosList({ alunoId }: { alunoId: string }) {
   const qc = useQueryClient();
