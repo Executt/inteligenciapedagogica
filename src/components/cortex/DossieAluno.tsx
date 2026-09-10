@@ -61,7 +61,11 @@ export function UploadZone({ alunoId }: { alunoId: string }) {
       if (error) throw new Error(error.message);
       pushFeed({ nome: file.name, etapa: "ROTEAMENTO", ts: Date.now() });
       const res = await ingest({
-        data: { alunoId, storagePath: path, nome: file.name, mime: file.type || "application/octet-stream", tamanho: file.size, sensivel },
+        data: {
+          alunoId, storagePath: path, nome: file.name,
+          mime: file.type || "application/octet-stream", tamanho: file.size, sensivel,
+          ...(modelo !== "auto" ? { modelo } : {}),
+        },
       });
       pushFeed({ nome: file.name, etapa: "OK", ts: Date.now() });
       return res;
