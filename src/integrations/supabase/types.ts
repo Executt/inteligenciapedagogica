@@ -824,6 +824,69 @@ export type Database = {
         }
         Relationships: []
       }
+      intervencoes: {
+        Row: {
+          aluno_id: string
+          categoria_causa: string
+          created_at: string
+          criado_por: string | null
+          data_intervencao: string
+          escola_id: string | null
+          id: string
+          observacoes: string | null
+          proximos_passos: string | null
+          responsavel: string
+          resultado: string
+          tipo_contato: string
+          updated_at: string
+        }
+        Insert: {
+          aluno_id: string
+          categoria_causa: string
+          created_at?: string
+          criado_por?: string | null
+          data_intervencao?: string
+          escola_id?: string | null
+          id?: string
+          observacoes?: string | null
+          proximos_passos?: string | null
+          responsavel: string
+          resultado: string
+          tipo_contato: string
+          updated_at?: string
+        }
+        Update: {
+          aluno_id?: string
+          categoria_causa?: string
+          created_at?: string
+          criado_por?: string | null
+          data_intervencao?: string
+          escola_id?: string | null
+          id?: string
+          observacoes?: string | null
+          proximos_passos?: string | null
+          responsavel?: string
+          resultado?: string
+          tipo_contato?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intervencoes_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intervencoes_escola_id_fkey"
+            columns: ["escola_id"]
+            isOneToOne: false
+            referencedRelation: "escolas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matriculas: {
         Row: {
           aluno_id: string
