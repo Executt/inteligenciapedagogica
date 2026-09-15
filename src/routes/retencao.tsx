@@ -18,6 +18,7 @@ export const Route = createFileRoute("/retencao")({
 
 const tabs = [
   { to: "/retencao/painel", label: "Painel de Indicadores" },
+  { to: "/retencao/escolas", label: "Por Escola" },
   { to: "/retencao/alunos", label: "Alunos em Risco" },
   { to: "/retencao/registrar", label: "Registrar Intervenção" },
   { to: "/retencao/chat", label: "Chat Rápido" },
@@ -26,6 +27,7 @@ const tabs = [
 function RetencaoLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate({ from: "/retencao" });
+  const activeTab = pathname.startsWith("/retencao/escola/") ? "/retencao/escolas" : pathname;
 
   return (
     <AppShell>
