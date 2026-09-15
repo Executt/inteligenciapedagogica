@@ -29,6 +29,7 @@ import { Route as RetencaoAlunosRouteImport } from './routes/retencao.alunos'
 import { Route as AlunoIdRouteImport } from './routes/aluno.$id'
 import { Route as AuthenticatedCortexRouteImport } from './routes/_authenticated/cortex'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as RetencaoEscolaIdRouteImport } from './routes/retencao.escola.$id'
 import { Route as ApiPublicPulseIngestRouteImport } from './routes/api/public/pulse/ingest'
 
 const TurmasRoute = TurmasRouteImport.update({
@@ -131,6 +132,11 @@ const AuthenticatedConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const RetencaoEscolaIdRoute = RetencaoEscolaIdRouteImport.update({
+  id: '/escola/$id',
+  path: '/escola/$id',
+  getParentRoute: () => RetencaoRoute,
+} as any)
 const ApiPublicPulseIngestRoute = ApiPublicPulseIngestRouteImport.update({
   id: '/api/public/pulse/ingest',
   path: '/api/public/pulse/ingest',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/retencao/painel': typeof RetencaoPainelRoute
   '/retencao/registrar': typeof RetencaoRegistrarRoute
   '/turma/$id': typeof TurmaIdRoute
+  '/retencao/escola/$id': typeof RetencaoEscolaIdRoute
   '/api/public/pulse/ingest': typeof ApiPublicPulseIngestRoute
 }
 export interface FileRoutesByTo {
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/retencao/painel': typeof RetencaoPainelRoute
   '/retencao/registrar': typeof RetencaoRegistrarRoute
   '/turma/$id': typeof TurmaIdRoute
+  '/retencao/escola/$id': typeof RetencaoEscolaIdRoute
   '/api/public/pulse/ingest': typeof ApiPublicPulseIngestRoute
 }
 export interface FileRoutesById {
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/retencao/painel': typeof RetencaoPainelRoute
   '/retencao/registrar': typeof RetencaoRegistrarRoute
   '/turma/$id': typeof TurmaIdRoute
+  '/retencao/escola/$id': typeof RetencaoEscolaIdRoute
   '/api/public/pulse/ingest': typeof ApiPublicPulseIngestRoute
 }
 export interface FileRouteTypes {
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/retencao/painel'
     | '/retencao/registrar'
     | '/turma/$id'
+    | '/retencao/escola/$id'
     | '/api/public/pulse/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/retencao/painel'
     | '/retencao/registrar'
     | '/turma/$id'
+    | '/retencao/escola/$id'
     | '/api/public/pulse/ingest'
   id:
     | '__root__'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/retencao/painel'
     | '/retencao/registrar'
     | '/turma/$id'
+    | '/retencao/escola/$id'
     | '/api/public/pulse/ingest'
   fileRoutesById: FileRoutesById
 }
@@ -434,6 +446,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/retencao/escola/$id': {
+      id: '/retencao/escola/$id'
+      path: '/escola/$id'
+      fullPath: '/retencao/escola/$id'
+      preLoaderRoute: typeof RetencaoEscolaIdRouteImport
+      parentRoute: typeof RetencaoRoute
+    }
     '/api/public/pulse/ingest': {
       id: '/api/public/pulse/ingest'
       path: '/api/public/pulse/ingest'
@@ -463,6 +482,7 @@ interface RetencaoRouteChildren {
   RetencaoEscolasRoute: typeof RetencaoEscolasRoute
   RetencaoPainelRoute: typeof RetencaoPainelRoute
   RetencaoRegistrarRoute: typeof RetencaoRegistrarRoute
+  RetencaoEscolaIdRoute: typeof RetencaoEscolaIdRoute
 }
 
 const RetencaoRouteChildren: RetencaoRouteChildren = {
@@ -471,6 +491,7 @@ const RetencaoRouteChildren: RetencaoRouteChildren = {
   RetencaoEscolasRoute: RetencaoEscolasRoute,
   RetencaoPainelRoute: RetencaoPainelRoute,
   RetencaoRegistrarRoute: RetencaoRegistrarRoute,
+  RetencaoEscolaIdRoute: RetencaoEscolaIdRoute,
 }
 
 const RetencaoRouteWithChildren = RetencaoRoute._addFileChildren(
