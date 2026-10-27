@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -121,6 +121,60 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      avaliacoes: {
+        Row: {
+          aluno_id: string
+          bimestre: string
+          created_at: string
+          disciplina: string
+          frequencia: number | null
+          id: string
+          nota: number | null
+          origem: string
+          turma_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          aluno_id: string
+          bimestre: string
+          created_at?: string
+          disciplina: string
+          frequencia?: number | null
+          id?: string
+          nota?: number | null
+          origem?: string
+          turma_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aluno_id?: string
+          bimestre?: string
+          created_at?: string
+          disciplina?: string
+          frequencia?: number | null
+          id?: string
+          nota?: number | null
+          origem?: string
+          turma_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avaliacoes_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avaliacoes_turma_id_fkey"
+            columns: ["turma_id"]
+            isOneToOne: false
+            referencedRelation: "turmas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cortex_analises: {
         Row: {

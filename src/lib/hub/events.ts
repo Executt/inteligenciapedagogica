@@ -32,7 +32,7 @@ export const EVENT_AGGREGATE: Record<DomainEventName, EventAggregate> = Object.f
 ) as Record<DomainEventName, EventAggregate>;
 
 /** Consumidores registrados no barramento (camadas internas). */
-export const CONSUMIDORES = ["analytics", "ai-services", "administration", "integration-hub"] as const;
+export const CONSUMIDORES = ["core-platform", "analytics", "ai-services", "administration", "integration-hub"] as const;
 export type Consumidor = (typeof CONSUMIDORES)[number];
 
 /** Transporte atual do barramento — trocável sem alterar os contratos acima. */

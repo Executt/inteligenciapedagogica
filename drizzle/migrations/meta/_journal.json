@@ -8,6 +8,13 @@
       "when": 1789182802417,
       "tag": "0000_create_intervencoes",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793105486239,
+      "tag": "0001_create_avaliacoes",
+      "breakpoints": true
     }
   ]
 }

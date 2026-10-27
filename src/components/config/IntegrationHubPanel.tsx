@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   listConnectors, saveConnector, deleteConnector, testConnector, listConnectorLogs,
 } from "@/lib/hub/connectors.functions";
+import { installPreset } from "@/lib/hub/presets.functions";
 import {
   listEvents, publishEvent, drainEvents, listSubscriptions, upsertSubscription, removeSubscription,
 } from "@/lib/hub/events.functions";
@@ -21,7 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plug, Plus, Play, Trash2, Pencil, RefreshCw, Radio, Send } from "lucide-react";
+import { Plug, Plus, Play, Trash2, Pencil, RefreshCw, Radio, Send, Building2, GraduationCap } from "lucide-react";
 import { SyncTab } from "@/components/config/hub/SyncTab";
 import { MappingsTab } from "@/components/config/hub/MappingsTab";
 import { BusMonitor } from "@/components/config/hub/BusMonitor";
@@ -120,6 +121,15 @@ function ConectoresTab() {
     onError: (e: any) => toast.error(e?.message ?? "Falha ao remover."),
   });
 
+  const instalarPreset = useMutation({
+    mutationFn: (preset: "rh" | "matriculas") => installPresetFn({ data: { preset } }),
+    onSuccess: (r: any) => {
+      toast.success(`${r.nome} instalado: ${r.jobs} sincronização(ões), ${r.mapeamentos} mapeamentos e ${r.assinaturas} assinaturas.`);
+      qc.invalidateQueries({ queryKey: ["hub"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao instalar o conector oficial."),
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -128,6 +138,32 @@ function ConectoresTab() {
           <Plus className="h-4 w-4 mr-1" /> Novo conector
         </Button>
       </div>
+
+      <Card className="p-4">
+        <div className="text-sm font-semibold mb-1">Conectores oficiais da Secretaria</div>
+        <p className="text-xs text-muted-foreground mb-3">
+          Instalam conector, agendamentos de sincronização, mapeamentos de campos e assinaturas do barramento em um clique.
+          A instalação é idempotente: executar novamente apenas atualiza a configuração.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={instalarPreset.isPending}
+            onClick={() => instalarPreset.mutate("rh")}
+          >
+            <Building2 className="h-4 w-4 mr-1" /> RH da Secretaria — servidores, cargos e lotações
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={instalarPreset.isPending}
+            onClick={() => instalarPreset.mutate("matriculas")}
+          >
+            <GraduationCap className="h-4 w-4 mr-1" /> Matrículas da Secretaria — alunos, turmas e frequência
+          </Button>
+        </div>
+      </Card>
 
       <Card className="overflow-hidden">
         <Table>
