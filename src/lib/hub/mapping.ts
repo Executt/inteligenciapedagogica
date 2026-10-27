@@ -4,13 +4,15 @@
  */
 import type { DomainEventName } from "@/lib/platform/contracts";
 
-export const SYNC_AGGREGATES = ["student", "school", "grade"] as const;
+export const SYNC_AGGREGATES = ["student", "school", "class", "teacher", "grade"] as const;
 export type SyncAggregate = (typeof SYNC_AGGREGATES)[number];
 
 export const AGGREGATE_LABEL: Record<SyncAggregate, string> = {
   student: "Aluno (student)",
   school: "Unidade escolar (school)",
-  grade: "Nota / avaliação (grade)",
+  class: "Turma (class)",
+  teacher: "Servidor / professor (teacher)",
+  grade: "Nota / frequência (grade)",
 };
 
 /** Campos canônicos do contrato interno por agregado. */
