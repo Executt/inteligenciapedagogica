@@ -35,6 +35,28 @@ export const TARGET_FIELDS: Record<SyncAggregate, Array<{ id: string; rotulo: st
     { id: "etapa_predominante", rotulo: "Etapa predominante" },
     { id: "situacao", rotulo: "Situação" },
   ],
+  class: [
+    { id: "codigo", rotulo: "Código da turma" },
+    { id: "nome", rotulo: "Nome da turma" },
+    { id: "escola_codigo", rotulo: "Código da unidade escolar" },
+    { id: "etapa", rotulo: "Etapa (Fundamental/Médio)" },
+    { id: "ano_serie", rotulo: "Ano / série" },
+    { id: "turno", rotulo: "Turno" },
+    { id: "ano_letivo", rotulo: "Ano letivo" },
+    { id: "capacidade", rotulo: "Capacidade" },
+    { id: "situacao", rotulo: "Situação" },
+  ],
+  teacher: [
+    { id: "matricula", rotulo: "Matrícula funcional" },
+    { id: "nome", rotulo: "Nome completo" },
+    { id: "email", rotulo: "E-mail institucional" },
+    { id: "telefone", rotulo: "Telefone" },
+    { id: "cargo", rotulo: "Cargo / função" },
+    { id: "escola_codigo", rotulo: "Código da unidade de lotação" },
+    { id: "disciplina_codigo", rotulo: "Código da disciplina" },
+    { id: "carga_horaria", rotulo: "Carga horária" },
+    { id: "situacao", rotulo: "Situação" },
+  ],
   grade: [
     { id: "aluno_codigo", rotulo: "Código do aluno" },
     { id: "turma_codigo", rotulo: "Código da turma" },
@@ -192,6 +214,8 @@ export function applyMappings(
 export const AGGREGATE_EVENT: Record<SyncAggregate, DomainEventName> = {
   student: "StudentUpdated",
   school: "SchoolUpdated",
+  class: "ClassCreated",
+  teacher: "TeacherCreated",
   grade: "GradeUpdated",
 };
 
