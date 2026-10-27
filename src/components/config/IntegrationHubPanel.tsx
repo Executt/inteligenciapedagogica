@@ -88,6 +88,7 @@ function ConectoresTab() {
   const save = useServerFn(saveConnector);
   const remove = useServerFn(deleteConnector);
   const test = useServerFn(testConnector);
+  const installPresetFn = useServerFn(installPreset);
 
   const [form, setForm] = useState<Conn | null>(null);
   const { data: conectores = [], isLoading } = useQuery({ queryKey: ["hub", "connectors"], queryFn: () => list({}) });

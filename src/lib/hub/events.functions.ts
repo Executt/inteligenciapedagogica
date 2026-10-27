@@ -72,7 +72,11 @@ export const drainEvents = createServerFn({ method: "POST" })
       const inicio = Date.now();
 
       // Consumidor interno do Core Platform: persiste o evento nas tabelas mestres.
-      const core = await applyEventToCore(context.supabase, ev.nome, (ev.payload ?? {}) as Record<string, unknown>);
+      const core = await applyEventToCore(
+        context.supabase,
+        ev.nome as (typeof DOMAIN_EVENTS)[number],
+        (ev.payload ?? {}) as Record<string, unknown>,
+      );
       await context.supabase.from("hub_event_deliveries").insert({
         event_id: ev.id,
         consumidor: "core-platform",
