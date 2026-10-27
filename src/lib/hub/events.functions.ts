@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { DOMAIN_EVENTS } from "@/lib/platform/contracts";
 import { EVENT_AGGREGATE, CONSUMIDORES } from "@/lib/hub/events";
+import { applyEventToCore } from "@/lib/hub/consumers";
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
@@ -56,7 +57,7 @@ export const drainEvents = createServerFn({ method: "POST" })
 
     const { data: pendentes, error } = await context.supabase
       .from("hub_events")
-      .select("id, nome, tentativas")
+      .select("id, nome, tentativas, payload")
       .eq("status", "pendente")
       .order("created_at")
       .limit(data.limit);
@@ -64,18 +65,32 @@ export const drainEvents = createServerFn({ method: "POST" })
 
     let processados = 0;
     let semConsumidor = 0;
+    let errosCore = 0;
 
     for (const ev of pendentes ?? []) {
       const alvos = (subs ?? []).filter((s: any) => s.evento === ev.nome);
       const inicio = Date.now();
 
+      // Consumidor interno do Core Platform: persiste o evento nas tabelas mestres.
+      const core = await applyEventToCore(context.supabase, ev.nome, (ev.payload ?? {}) as Record<string, unknown>);
+      await context.supabase.from("hub_event_deliveries").insert({
+        event_id: ev.id,
+        consumidor: "core-platform",
+        status: core.aplicado ? ("sucesso" as const) : ("erro" as const),
+        duracao_ms: Date.now() - inicio,
+        mensagem: core.mensagem,
+      });
+      if (!core.aplicado) errosCore++;
+
       if (alvos.length === 0) {
         await context.supabase.from("hub_events").update({
-          status: "descartado",
+          status: core.aplicado ? "processado" : "erro",
+          tentativas: (ev.tentativas ?? 0) + 1,
           processado_em: new Date().toISOString(),
-          erro: "Nenhum consumidor assinante.",
+          erro: core.aplicado ? "Nenhum consumidor assinante além do Core Platform." : core.mensagem,
         }).eq("id", ev.id);
         semConsumidor++;
+        if (core.aplicado) processados++;
         continue;
       }
 
@@ -90,12 +105,12 @@ export const drainEvents = createServerFn({ method: "POST" })
       );
 
       await context.supabase.from("hub_events").update({
-        status: "processado",
+        status: core.aplicado ? "processado" : "erro",
         tentativas: (ev.tentativas ?? 0) + 1,
         processado_em: new Date().toISOString(),
-        erro: null,
+        erro: core.aplicado ? null : core.mensagem,
       }).eq("id", ev.id);
-      processados++;
+      if (core.aplicado) processados++;
     }
 
     return { processados, semConsumidor, avaliados: (pendentes ?? []).length };
