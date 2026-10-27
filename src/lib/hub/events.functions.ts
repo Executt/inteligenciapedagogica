@@ -113,7 +113,7 @@ export const drainEvents = createServerFn({ method: "POST" })
       if (core.aplicado) processados++;
     }
 
-    return { processados, semConsumidor, avaliados: (pendentes ?? []).length };
+    return { processados, semConsumidor, errosCore, avaliados: (pendentes ?? []).length };
   });
 
 export const listEvents = createServerFn({ method: "GET" })
